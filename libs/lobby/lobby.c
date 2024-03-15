@@ -113,55 +113,27 @@ void destroy_lobby(Lobby *lobby) {
 }
 
 void print_deck(Card *deck[], uchar size) {
-    // Calculating how much rows do we need to print this deck of cards and allocating memory for that.
-    uchar rows_size = (uchar) ceil(size / MAX_CARDS_PER_ROW) + 1;
-    uchar *rows_of_card[rows_size];
-    for (uchar i = 0 ; i < rows_size; i++)
-        rows_of_card[i] = (uchar *) malloc(MAX_CARD_ASCII_IMAGE_LENGTH * MAX_CARDS_PER_ROW);
-
-    // As height of all cards is the same, calculating height of first card is enough and we don't need to
-    // calculate it for each card.
-    uchar ascii_image_height = 0;
-    uchar *first_card_ascii_image = (uchar *) malloc(MAX_CARD_ASCII_IMAGE_LENGTH);
-    strncpy(first_card_ascii_image, deck[0]->card_ascii_image, MAX_CARD_ASCII_IMAGE_LENGTH);
-    uchar *line = strtok(first_card_ascii_image, "\n");
-    while (line != NULL) {
-        line = strtok(NULL, "\n");
-        ++ascii_image_height;
-    }
-    free(first_card_ascii_image);
-
     // We use line-by-line logic; means that we start to iterate for a range of ASCII_IMAGE_HEIGHT. Then we iterate on all
-    // cards and add n'th line of its ASCII image to allocated buffer.
+    // cards and add n'th line of its ASCII image to (allocated buffer/output stream).
     // n is iteration of ASCII_IMAGE_HEIGHT and determines which line should be use now.
     uchar current_row = 0;
     for (uchar i = 0; i < size; i += (i + MAX_CARDS_PER_ROW > size ? size - i : MAX_CARDS_PER_ROW)) {
-        for (uchar current_line = 0; current_line < ascii_image_height; current_line++) {
+        for (uchar current_line = 0; current_line < CARD_ASCII_IMAGE_HEIGHT; current_line++) {
             uchar bound = (i + MAX_CARDS_PER_ROW > size ? size : i + MAX_CARDS_PER_ROW);
             for (uchar j = i; j < bound; j++) {
                 uchar *card_ascii_image = (uchar *) malloc(MAX_CARD_ASCII_IMAGE_LENGTH);
                 strncpy(card_ascii_image, deck[j]->card_ascii_image, MAX_CARD_ASCII_IMAGE_LENGTH);
-                line = strtok(card_ascii_image, "\n");
+                uchar *line = strtok(card_ascii_image, "\n");
                 for (uchar c = 0 ; c < current_line && line != NULL; c++)
                     line = strtok(NULL, "\n");
 
-                // buffer-saving approach
-                // if (((j + 1) % (MAX_CARDS_PER_ROW) == 0 && j != 0) || ((i + MAX_CARDS_PER_ROW > size && j == bound - 1)))
-                    // strncat(line, "\n", 2);
-                // strncat(rows_of_card[current_row], line, 64);
                 printf(line);
                 if (((j + 1) % (MAX_CARDS_PER_ROW) == 0 && j != 0) || ((i + MAX_CARDS_PER_ROW > size && j == bound - 1)))
                     printf("\n");
                 free(card_ascii_image);
             }
         }
-        // strncat(rows_of_card[current_row++], "\n", 2);
     }
-
-    // for (uchar i = 0; i < rows_size; i++) {
-    //     printf("%s", rows_of_card[i]);
-    //     free(rows_of_card[i]);
-    // }
 }
 
 void sort_players_based_on_valuable_index(Lobby *lobby, uchar valueable_index) {
@@ -260,21 +232,19 @@ void setup_deck(Lobby *lobby) {
         }
     }
 
-    // print_deck(lobby->deck, lobby->size_of_cards);
     // specifying eldest player
     specify_elder_player(lobby);
     printf("Shuffling cards. Please wait ...\n");
     shuffle_cards(lobby);
-    print_deck(lobby->deck, lobby->size_of_cards);
-    // deal_cards(lobby);
+    deal_cards(lobby);
 
-    // printf("Printing cards...\n");
+    printf("Printing cards...\n");
 
-    // uchar size_of_players = get_players_size(lobby);
-    // for (uchar i = 0; i < size_of_players; i++) {
-    //     printf("Cards in hand of player %d:\n", i + 1);
-    //     print_deck(lobby->players[i]->cards, lobby->players[i]->size_of_cards);
-    // }
+    uchar size_of_players = get_players_size(lobby);
+    for (uchar i = 0; i < size_of_players; i++) {
+        printf("Cards in hand of player %d:\n", i + 1);
+        print_deck(lobby->players[i]->cards, lobby->players[i]->size_of_cards);
+    }
 }
 
 void create_lobby(Lobby *lobby, char name[], GameType type) {
