@@ -64,14 +64,14 @@
 
 typedef struct MenuOption
 {
-    uchar text[MAX_MENU_OPTION_LENGTH];
+    uchar text[MENU_MAX_OPTION_LENGTH];
     function callback;
 } MenuOption;
 
 
 typedef struct Menu
 {
-    MenuOption *menu_options[MAX_MENU_OPTIONS_PER_MENU];
+    MenuOption *menu_options[MENU_MAX_OPTIONS_PER_MENU];
     uchar size_of_menu_options;
 } Menu;
 

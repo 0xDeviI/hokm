@@ -56,8 +56,8 @@
 #include <stdlib.h>
 #include <string.h>
 // #include "libs/cards/card.h"
-// #include "libs/lobby/lobby.h"
-// #include "libs/player/player.h"
+#include "libs/lobby/lobby.h"
+#include "libs/player/player.h"
 // #include <netinet/in.h>
 // #include <sys/socket.h>
 // #include <arpa/inet.h>
@@ -78,10 +78,15 @@
 // Right Arrow 0x1B 0x5B 0x43
 // Up Arrow    0x1B 0x5B 0x41
 
+void *test(void *arg) {
+    Screen *screen = (Screen *) arg;
+    sleep(3);
+    vtprintf(screen, "Hello, I'm %s!\nI'm %d years old. I have %.2f dollars RN.", "Armin Asefi", 19, 26.51f);
+}
 
 int main(int argc, char* argv[]) {
     // Lobby lobby;
-    // for (uchar i = 0; i < MAX_PLAYERS; i++) {
+    // for (uchar i = 0; i < PLAYERS_AVAILABLE; i++) {
     //     lobby.players[i] = (Player*) malloc(sizeof(Player));
     //     sprintf(lobby.players[i]->name, "Player %d", i + 1);
     //     lobby.players[i]->size_of_cards = 0;
@@ -93,12 +98,30 @@ int main(int argc, char* argv[]) {
     // setup_game_menu(&menu);
     // handle_menu(&menu);
 
+
     Screen screen;
     init_screen(&screen);
     draw_screen_frame(&screen);
     endwin();
 
+    // Just a calm before the storm, everything works just fine now, (except emojis; a lot to do...)
+    vtprintf(&screen, "Hello world!\n");
+
+
+
+
+
+
+    // create_thread(test, &screen);
     // create_lobby(&lobby, "Freak Fuckers Game!", FOUR_PLAYERS);
+    // printf(lobby.deck[0]->card_ascii_image);
+    // vtprintf(&screen, lobby.deck[0]->card_ascii_image);
+
+    // vtprintf(&screen, "😂 --- 😔 --- 🐙 --- 🌎 --- 🔼 --- 🇮🇷");
+    // vtprintf(&screen, "\x1┌\x1\x1─\x1\x1─\x1\x1─\x1\x1─\x1\x1─\x1\x1─\x1\x1─\x1\x1─\x1\x1┐\x1\n");
+    // printf("%d\n", strlen("\U0001F1EE"));
+
+
     // destroy_lobby(&lobby);
     // return 0;
     pthread_exit(NULL);

@@ -80,11 +80,11 @@ typedef enum GameType
 
 typedef struct Lobby
 {
-    uchar name[MAX_GAME_NAME];
+    uchar name[LOBBY_MAX_GAME_NAME];
     GameType type;
     SuitType trump_suit;
-    Player *players[MAX_PLAYERS];
-    Card *deck[ALL_CARDS];
+    Player *players[PLAYERS_AVAILABLE];
+    Card *deck[CARDS_AVAILABLE];
     uchar size_of_cards;
 } Lobby;
 

@@ -69,7 +69,7 @@ void deal_cards(Lobby *lobby) {
         for (uchar i = 0; i < 4; i++) {
             uchar index;
             for (uchar j = 0; j < 5; j++) {
-                index = ALL_CARDS - lobby->size_of_cards;
+                index = CARDS_AVAILABLE - lobby->size_of_cards;
                 // If player is not elder player, we should check that is it a trump card or not?
                 if (i != 0)
                     lobby->deck[index]->suit.isTrump = lobby->deck[index]->suit.type == lobby->trump_suit ? 1 : 0;
@@ -123,7 +123,7 @@ void deal_cards(Lobby *lobby) {
             for (uchar i = 0; i < 4; i++) {
                 uchar index;
                 for (uchar j = 0; j < 4; j++) {
-                    index = ALL_CARDS - lobby->size_of_cards;
+                    index = CARDS_AVAILABLE - lobby->size_of_cards;
                     // Checking for trump card
                     lobby->deck[index]->suit.isTrump = lobby->deck[index]->suit.type == lobby->trump_suit ? 1 : 0;
                     lobby->players[i]->cards[lobby->players[i]->size_of_cards++] = lobby->deck[index];
@@ -140,7 +140,7 @@ void shuffle_cards(Lobby *lobby) {
     // it should be used like:
     // int sIndex = rand_r(&seed) % lobby->size_of_cards;
 
-    for (uchar i = 0; i < DECK_SHUFFLE_DEPTH; i++) {
+    for (uchar i = 0; i < CARDS_DECK_SHUFFLE_DEPTH; i++) {
         srand(time(NULL));
         for (uchar j = 0; j < lobby->size_of_cards; j++) {
             int sIndex = rand() % lobby->size_of_cards;
@@ -169,20 +169,20 @@ void destroy_lobby(Lobby *lobby) {
 void print_deck(Card *deck[], uchar size) {
     // We use line-by-line logic; means that we start to iterate for a range of ASCII_IMAGE_HEIGHT. Then we iterate on all
     // cards and add n'th line of its ASCII image to (allocated buffer/output stream).
-    // n is iteration of ASCII_IMAGE_HEIGHT and determines which line should be use now.
+    // n is iteration of ASCII_IMAGE_HEIGHT and determines which line should be used now.
     uchar current_row = 0;
-    for (uchar i = 0; i < size; i += (i + MAX_CARDS_PER_ROW > size ? size - i : MAX_CARDS_PER_ROW)) {
-        for (uchar current_line = 0; current_line < CARD_ASCII_IMAGE_HEIGHT; current_line++) {
-            uchar bound = (i + MAX_CARDS_PER_ROW > size ? size : i + MAX_CARDS_PER_ROW);
+    for (uchar i = 0; i < size; i += (i + CARDS_PER_ROW > size ? size - i : CARDS_PER_ROW)) {
+        for (uchar current_line = 0; current_line < CARDS_MAX_ASCII_IMAGE_HEIGHT; current_line++) {
+            uchar bound = (i + CARDS_PER_ROW > size ? size : i + CARDS_PER_ROW);
             for (uchar j = i; j < bound; j++) {
-                uchar *card_ascii_image = (uchar *) malloc(MAX_CARD_ASCII_IMAGE_LENGTH);
-                strncpy(card_ascii_image, deck[j]->card_ascii_image, MAX_CARD_ASCII_IMAGE_LENGTH);
+                uchar *card_ascii_image = (uchar *) malloc(CARDS_MAX_ASCII_IMAGE_LENGTH);
+                strncpy(card_ascii_image, deck[j]->card_ascii_image, CARDS_MAX_ASCII_IMAGE_LENGTH);
                 uchar *line = strtok(card_ascii_image, "\n");
                 for (uchar c = 0 ; c < current_line && line != NULL; c++)
                     line = strtok(NULL, "\n");
 
                 printf(line);
-                if (((j + 1) % (MAX_CARDS_PER_ROW) == 0 && j != 0) || ((i + MAX_CARDS_PER_ROW > size && j == bound - 1)))
+                if (((j + 1) % (CARDS_PER_ROW) == 0 && j != 0) || ((i + CARDS_PER_ROW > size && j == bound - 1)))
                     printf("\n");
                 free(card_ascii_image);
             }
@@ -287,22 +287,22 @@ void setup_deck(Lobby *lobby) {
     }
 
     // specifying eldest player
-    specify_elder_player(lobby);
-    printf("Shuffling cards. Please wait ...\n");
+    // specify_elder_player(lobby);
+    // printf("Shuffling cards. Please wait ...\n");
     shuffle_cards(lobby);
-    deal_cards(lobby);
+    // deal_cards(lobby);
 
-    printf("Printing cards...\n");
+    // printf("Printing cards...\n");
 
-    uchar size_of_players = get_players_size(lobby);
-    for (uchar i = 0; i < size_of_players; i++) {
-        printf("Cards in hand of player %d:\n", i + 1);
-        print_deck(lobby->players[i]->cards, lobby->players[i]->size_of_cards);
-    }
+    // uchar size_of_players = get_players_size(lobby);
+    // for (uchar i = 0; i < size_of_players; i++) {
+    //     printf("Cards in hand of player %d:\n", i + 1);
+    //     print_deck(lobby->players[i]->cards, lobby->players[i]->size_of_cards);
+    // }
 }
 
 void create_lobby(Lobby *lobby, char name[], GameType type) {
-    if (strlen(name) < MAX_GAME_NAME)
+    if (strlen(name) < LOBBY_MAX_GAME_NAME)
         strcpy(lobby->name, name);
     else
         strcpy(lobby->name, "Unknown Game");

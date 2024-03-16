@@ -60,7 +60,9 @@
 #include "../thread/thread.h"
 #include <sys/ioctl.h>
 #include <string.h>
+#include <locale.h>
 #include <ncurses.h>
+#include <stdarg.h>
 #ifdef __unix__
     #define OS_WINDOWS 0
     #include <unistd.h>
@@ -76,6 +78,8 @@ typedef struct Screen
     ushort rows;
     ushort columns;
     uchar frame[SCREEN_MAX_ROWS][SCREEN_MAX_COLUMNS];
+    ushort x;
+    ushort y;
     /* data */
 } Screen;
 
@@ -93,5 +97,12 @@ void feed_screen_frame(Screen *screen, uchar character);
 void init_screen(Screen *screen);
 void *draw_screen_frame_thread(void *arg);
 void draw_screen_frame(Screen *screen);
+void vtput_new_line(Screen *screen);
+void vtput_horizontal_tab(Screen *screen);
+void vtput_vertical_tab(Screen *screen);
+void vtput_formfeed_pagebreak(Screen *screen);
+void vtput_carriage_return(Screen *screen);
+void vtputch(Screen *screen, uchar data);
+void vtprintf(Screen *screen, uchar *fmt, ...);
 
 #endif // !IO_H

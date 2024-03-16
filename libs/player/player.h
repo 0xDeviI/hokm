@@ -66,8 +66,8 @@ typedef enum PlayerType {
 
 typedef struct Player
 {
-    uchar name[MAX_PLAYER_NAME];
-    Card *cards[MAX_CARDS_PER_HAND];
+    uchar name[PLAYER_MAX_NAME];
+    Card *cards[CARDS_PER_HAND];
     PlayerType type;
     uchar size_of_cards;
 } Player;

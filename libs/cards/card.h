@@ -69,7 +69,7 @@ typedef struct Card
     uchar isAce;
     uchar isFace;
     uchar number;
-    uchar card_ascii_image[MAX_CARD_ASCII_IMAGE_LENGTH];
+    uchar card_ascii_image[CARDS_MAX_ASCII_IMAGE_LENGTH];
 } Card;
 
 

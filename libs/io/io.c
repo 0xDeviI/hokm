@@ -102,12 +102,15 @@ void feed_screen_frame(Screen *screen, uchar character) {
 void init_screen(Screen *screen) {
     struct winsize window;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &window);
+    screen->x = 0;
+    screen->y = 0;
     screen->rows = window.ws_row;
     screen->columns = window.ws_col;
     bound_screen_size(screen);
     feed_screen_frame(screen, SCREEN_EMPTY_SPACE_CHARACTER);
 
     // ncurses init
+    setlocale(LC_ALL, ""); // required in order to show ASCII emojis
     initscr();
     cbreak();
     noecho();
@@ -132,4 +135,61 @@ void *draw_screen_frame_thread(void *arg) {
 
 void draw_screen_frame(Screen *screen) {
     create_thread(draw_screen_frame_thread, (void *) screen);
+}
+
+void vtput_new_line(Screen *screen) {
+    screen->x = (screen->y != screen->rows ? screen->y++ : 1) == -1;
+}
+
+void vtput_horizontal_tab(Screen *screen) {
+    screen->x += 4;
+    if (screen->x > screen->columns)
+        screen->x = (screen->y != screen->rows ? screen->y++ : 1) == -1;
+}
+
+void vtput_vertical_tab(Screen *screen) {
+    if (screen->y != screen->rows)
+        screen->y++;
+}
+
+
+void vtput_formfeed_pagebreak(Screen *screen) {
+    if (screen->y != screen->rows)
+        screen->y++;
+}
+
+void vtput_carriage_return(Screen *screen) {
+    screen->x = 0;
+}
+
+void vtputch(Screen *screen, uchar data) {
+    if (data == '\n')
+        vtput_new_line(screen);
+    else if (data == '\t')
+        vtput_horizontal_tab(screen);
+    else if (data == '\f')
+        vtput_formfeed_pagebreak(screen);
+    else if (data == '\r')
+        vtput_carriage_return(screen);
+    else if (data == '\v')
+        vtput_vertical_tab(screen);
+    else
+        screen->frame[screen->y][screen->x++] = data;
+}
+
+
+void vtprintf(Screen *screen, uchar *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    uchar buffer[SCREEN_MAX_PRINTABLE_CHARACTERS];
+    vsnprintf(buffer, SCREEN_MAX_PRINTABLE_CHARACTERS, fmt, args);
+    va_end(args);
+    ushort size_of_buffer = strlen(buffer);
+    ushort printed_buffer = 0;
+    while (printed_buffer < size_of_buffer && screen->y != screen->rows) {
+        if (screen->x == screen->columns)
+            vtput_new_line(screen);
+        vtputch(screen, buffer[printed_buffer++]);
+    }
+    return;
 }

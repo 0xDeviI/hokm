@@ -57,7 +57,7 @@
 void add_menu_option(uchar *text, Menu *menu, function callback) {
     menu->menu_options[menu->size_of_menu_options] = (MenuOption *) malloc(sizeof(MenuOption));
     MenuOption *menu_option = (MenuOption *) malloc(sizeof(MenuOption));
-    strncpy(menu_option->text, text, MAX_MENU_OPTION_LENGTH);
+    strncpy(menu_option->text, text, MENU_MAX_OPTION_LENGTH);
     menu_option->callback = callback;
     menu->menu_options[menu->size_of_menu_options++] = menu_option;
 }

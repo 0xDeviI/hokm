@@ -131,18 +131,18 @@ uchar *get_card_letter_character(Card *card) {
 }
 
 uchar *get_card_ascii_image(Card *card) {
-    uchar *cardString = (uchar *) malloc(MAX_CARD_ASCII_IMAGE_LENGTH);
+    uchar *cardString = (uchar *) malloc(CARDS_MAX_ASCII_IMAGE_LENGTH);
     uchar *letter = get_card_letter_character(card);
     uchar *suit = get_card_suit_character(card);
     if (card->isAce || card->isFace)
-        snprintf(cardString, MAX_CARD_ASCII_IMAGE_LENGTH, "┌─────────┐\n│%s        │\n|         |\n│    %s    |\n|         |\n│        %s│\n└─────────┘", 
+        snprintf(cardString, CARDS_MAX_ASCII_IMAGE_LENGTH, "┌─────────┐\n│%s        │\n|         |\n│    %s    |\n|         |\n│        %s│\n└─────────┘", 
         letter, suit, letter);
     else
         if (card->number == 10)
-            snprintf(cardString, MAX_CARD_ASCII_IMAGE_LENGTH, "┌─────────┐\n│%d       │\n|         |\n│    %s    |\n|         |\n│       %d│\n└─────────┘", 
+            snprintf(cardString, CARDS_MAX_ASCII_IMAGE_LENGTH, "┌─────────┐\n│%d       │\n|         |\n│    %s    |\n|         |\n│       %d│\n└─────────┘", 
             card->number, suit, card->number);
         else
-            snprintf(cardString, MAX_CARD_ASCII_IMAGE_LENGTH, "┌─────────┐\n│%d        │\n|         |\n│    %s    |\n|         |\n│        %d│\n└─────────┘", 
+            snprintf(cardString, CARDS_MAX_ASCII_IMAGE_LENGTH, "┌─────────┐\n│%d        │\n|         |\n│    %s    |\n|         |\n│        %d│\n└─────────┘", 
             card->number, suit, card->number);
     return cardString;
 }
