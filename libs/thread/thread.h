@@ -65,5 +65,6 @@ extern ushort threads_cluster_size;
 void terminate_thread(thread *thread);
 thread *create_thread(t_function func, void *arg);
 void run_thread(thread *thread);
+void clear_thread_mem_pool(void);
 
 #endif // !THREAD_H

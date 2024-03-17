@@ -110,5 +110,6 @@ int main(int argc, char* argv[]) {
     // destroy_lobby(&lobby);
     // return 0;
     pthread_exit(NULL);
+    clear_thread_mem_pool();
     return 0;
 }

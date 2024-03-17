@@ -79,3 +79,12 @@ thread *create_thread(t_function func, void *arg) {
 void run_thread(thread *thread) {
     pthread_join(*thread, NULL);
 }
+
+
+void clear_thread_mem_pool(void) {
+    for (ushort i = 0; i < threads_pool_size; i++) {
+        terminate_thread(threads_pool[i]);
+        free(threads_pool[i]);
+        threads_pool[i] = NULL;
+    }
+}
