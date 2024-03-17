@@ -78,12 +78,6 @@
 // Right Arrow 0x1B 0x5B 0x43
 // Up Arrow    0x1B 0x5B 0x41
 
-void *test(void *arg) {
-    Screen *screen = (Screen *) arg;
-    sleep(3);
-    vtprintf(screen, "Hello, I'm %s!\nI'm %d years old. I have %.2f dollars RN.", "Armin Asefi", 19, 26.51f);
-}
-
 int main(int argc, char* argv[]) {
     // Lobby lobby;
     // for (uchar i = 0; i < PLAYERS_AVAILABLE; i++) {
@@ -104,23 +98,14 @@ int main(int argc, char* argv[]) {
     draw_screen_frame(&screen);
     endwin();
 
-    // Just a calm before the storm, everything works just fine now, (except emojis; a lot to do...)
-    vtprintf(&screen, "Hello world!\n");
-
-
-
-
+    // I don't give a fuck about storms.
+    vtprintf(&screen, "Hello👿 world!\nI'm James Woodcrawl!\n");
+    vtprintf(&screen, "┌─────────┐\n");
 
 
     // create_thread(test, &screen);
     // create_lobby(&lobby, "Freak Fuckers Game!", FOUR_PLAYERS);
-    // printf(lobby.deck[0]->card_ascii_image);
     // vtprintf(&screen, lobby.deck[0]->card_ascii_image);
-
-    // vtprintf(&screen, "😂 --- 😔 --- 🐙 --- 🌎 --- 🔼 --- 🇮🇷");
-    // vtprintf(&screen, "\x1┌\x1\x1─\x1\x1─\x1\x1─\x1\x1─\x1\x1─\x1\x1─\x1\x1─\x1\x1─\x1\x1┐\x1\n");
-    // printf("%d\n", strlen("\U0001F1EE"));
-
 
     // destroy_lobby(&lobby);
     // return 0;

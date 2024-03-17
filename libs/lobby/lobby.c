@@ -54,9 +54,11 @@
 
 #include "./lobby.h"
 
+
 uchar get_players_size(Lobby *lobby) {
     return lobby->type == TWO_PLAYERS ? 2 : lobby->type == THREE_PLAYERS ? 3 : 4;
 }
+
 
 void deal_cards(Lobby *lobby) {
     switch (lobby->type)
@@ -135,6 +137,7 @@ void deal_cards(Lobby *lobby) {
     }
 }
 
+
 void shuffle_cards(Lobby *lobby) {
     // unsigned int seed = (unsigned int)time(NULL);
     // it should be used like:
@@ -153,6 +156,7 @@ void shuffle_cards(Lobby *lobby) {
     }
 }
 
+
 void destroy_lobby(Lobby *lobby) {
     uchar size_of_players = get_players_size(lobby);
     for (uchar i = 0; i < size_of_players; i++) {
@@ -165,6 +169,7 @@ void destroy_lobby(Lobby *lobby) {
         lobby->deck[i] = NULL;
     }
 }
+
 
 void print_deck(Card *deck[], uchar size) {
     // We use line-by-line logic; means that we start to iterate for a range of ASCII_IMAGE_HEIGHT. Then we iterate on all
@@ -189,6 +194,7 @@ void print_deck(Card *deck[], uchar size) {
         }
     }
 }
+
 
 void sort_players_based_on_valuable_index(Lobby *lobby, uchar valueable_index) {
     if (valueable_index != 0) {
@@ -229,6 +235,7 @@ void sort_players_based_on_valuable_index(Lobby *lobby, uchar valueable_index) {
     }
 }
 
+
 void specify_elder_player(Lobby *lobby) {
     printf("Specifying Elder Player. Please wait ...\n");
     shuffle_cards(lobby);
@@ -247,6 +254,7 @@ void specify_elder_player(Lobby *lobby) {
     // Re-sort players list in lobby
     sort_players_based_on_valuable_index(lobby, elder_player_index);    
 }
+
 
 void setup_deck(Lobby *lobby) {
     lobby->size_of_cards = 0;
@@ -300,6 +308,7 @@ void setup_deck(Lobby *lobby) {
     //     print_deck(lobby->players[i]->cards, lobby->players[i]->size_of_cards);
     // }
 }
+
 
 void create_lobby(Lobby *lobby, char name[], GameType type) {
     if (strlen(name) < LOBBY_MAX_GAME_NAME)

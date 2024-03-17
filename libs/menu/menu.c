@@ -54,6 +54,7 @@
 
 #include "menu.h"
 
+
 void add_menu_option(uchar *text, Menu *menu, function callback) {
     menu->menu_options[menu->size_of_menu_options] = (MenuOption *) malloc(sizeof(MenuOption));
     MenuOption *menu_option = (MenuOption *) malloc(sizeof(MenuOption));
@@ -61,6 +62,7 @@ void add_menu_option(uchar *text, Menu *menu, function callback) {
     menu_option->callback = callback;
     menu->menu_options[menu->size_of_menu_options++] = menu_option;
 }
+
 
 void handle_menu(Menu *menu) {
     uchar selected_menu_option = 1;
@@ -85,6 +87,7 @@ void handle_menu(Menu *menu) {
             printf("Invalid menu option.\n");
     }
 }
+
 
 void init_menu(Menu *menu) {
     menu->size_of_menu_options = 0;

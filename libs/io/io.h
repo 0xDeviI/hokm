@@ -73,10 +73,16 @@
 #include "../core/constants.h"
 #include "../core/globals.h"
 
+typedef struct Size
+{
+    volatile ushort rows;
+    volatile ushort columns;
+} Size;
+
+
 typedef struct Screen
 {
-    ushort rows;
-    ushort columns;
+    Size size;
     uchar frame[SCREEN_MAX_ROWS][SCREEN_MAX_COLUMNS];
     ushort x;
     ushort y;
@@ -90,9 +96,10 @@ void get_uchar(uchar *output);
 void get_string(uchar *output[]);
 
 // I/O ctl methods
-// void malloc_screen_frame(Screen *screen);
+extern uchar *frame_sequence[SCREEN_MAX_PRINTABLE_CHARACTERS];
+extern Size last_frame_size;
 void bound_screen_size(Screen *screen);
-void *screen_resize_thread(void *arg);
+void construct_frame_sequence(Screen *screen);
 void feed_screen_frame(Screen *screen, uchar character);
 void init_screen(Screen *screen);
 void *draw_screen_frame_thread(void *arg);

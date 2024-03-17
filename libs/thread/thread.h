@@ -62,7 +62,6 @@
 
 extern thread *threads_cluster[];
 extern ushort threads_cluster_size;
-void init_threads(void);
 void terminate_thread(thread *thread);
 thread *create_thread(t_function func, void *arg);
 void run_thread(thread *thread);

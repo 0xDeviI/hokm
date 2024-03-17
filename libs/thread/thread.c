@@ -57,12 +57,11 @@
 thread *threads_pool[MT_MAX_PARALLEL_THREADS];
 ushort threads_pool_size = 0;
 
-void init_threads(void) {
-}
 
 void terminate_thread(thread *thread) {
     pthread_cancel(*thread);
 }
+
 
 thread *create_thread(t_function func, void *arg) {
     if (threads_pool_size == MT_MAX_PARALLEL_THREADS) {
@@ -75,6 +74,7 @@ thread *create_thread(t_function func, void *arg) {
     pthread_create(threads_pool[threads_pool_size], NULL, func, arg);
     return threads_pool[threads_pool_size++];
 }
+
 
 void run_thread(thread *thread) {
     pthread_join(*thread, NULL);

@@ -54,6 +54,7 @@
 
 #include "./card.h"
 
+
 Card *get_valuable_card(Card *card1, Card *card2) {
     // Check for trumps
     if (card1->suit.isTrump && !card2->suit.isTrump)
@@ -80,6 +81,7 @@ Card *get_valuable_card(Card *card1, Card *card2) {
     }
 }
 
+
 uchar get_elder_player(Card *deck[], uchar size_of_players) {
     // Most valuable card is lowest one by default, we edit it if we could find more valuable card.
     Card most_valuable_card;
@@ -102,6 +104,7 @@ uchar get_elder_player(Card *deck[], uchar size_of_players) {
     return highest_player_index;
 }
 
+
 uchar *get_card_suit_character(Card *card) {
     switch (card->suit.type)
     {
@@ -115,6 +118,8 @@ uchar *get_card_suit_character(Card *card) {
         return "❤️";
     }
 }
+
+
 uchar *get_card_letter_character(Card *card) {
     if (card->isAce)
         return "A";
@@ -129,6 +134,7 @@ uchar *get_card_letter_character(Card *card) {
         return "J";
     }
 }
+
 
 uchar *get_card_ascii_image(Card *card) {
     uchar *cardString = (uchar *) malloc(CARDS_MAX_ASCII_IMAGE_LENGTH);
