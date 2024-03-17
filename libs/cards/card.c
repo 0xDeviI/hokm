@@ -155,57 +155,5 @@ uchar *get_card_ascii_image(Card *card) {
 
 
 void print_card(Card *card) {
-    // old method: String construction
-    // uchar suit;
-    // uchar face;
-    // uchar number;
-
-    // switch (card->suit.type)
-    // {
-    //     case HEART:
-    //         suit = 'H';
-    //         break;
-    //     case DIAMOND:
-    //         suit = 'D';
-    //        break;
-    //     case SPADE:
-    //         suit = 'S';
-    //         break;
-    //     case CLUB:
-    //         suit = 'C';
-    //         break;
-    // }
-
-    // if (card->isFace) {
-    //     switch (card->face)
-    //     {
-    //     case KING:
-    //     face = 'K';
-    //         break;
-    //     case QUEEN:
-    //     face = 'Q';
-    //         break;
-    //     case JACK:
-    //     face = 'J';
-    //         break;
-    //     }
-    // }
-
-    // if (card->isAce)
-    //     number = 'A';
-    // else
-    //     number = card->number;
-
-    // if (card->isAce) {
-    //     printf("%s(%c) %c (%c)\n", card->suit.isTrump ? "* " : "  ", number, suit, number);
-    // }
-    // else if (card->isFace) {
-    //     printf("%s(%c) %c (%c)\n", card->suit.isTrump ? "* " : "  ", face, suit, face);
-    // }
-    // else {
-    //     printf("%s(%d) %c (%d)\n", card->suit.isTrump ? "* " : "  ", number, suit, number);
-    // }
-
-    // new method: TUI
     printf("%s\n", card->card_ascii_image);
 }
