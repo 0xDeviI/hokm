@@ -77,6 +77,7 @@ void get_string(uchar *output[]) {
 
 
 // I/O ctl methods
+Screen *GLOBALSCR = NULL;
 uchar *frame_sequence[SCREEN_MAX_PRINTABLE_CHARACTERS];
 Size last_frame_size;
 
@@ -104,7 +105,7 @@ void feed_screen_frame(Screen *screen, uchar character) {
 }
 
 
-void init_screen(Screen *screen) {
+void init_screen(Screen *screen, uchar is_global_screen) {
     struct winsize window;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &window);
     screen->x = 0;
@@ -117,6 +118,10 @@ void init_screen(Screen *screen) {
 
     // Constructing frame sequence
     construct_frame_sequence(screen);
+
+    // Setting global screen
+    if (is_global_screen)
+        GLOBALSCR = screen;
 
     // ncurses init
     setlocale(LC_ALL, ""); // required in order to show ASCII emojis
@@ -186,7 +191,8 @@ void vtput_carriage_return(Screen *screen) {
 
 
 void vtputch(Screen *screen, uchar data) {
-    *frame_sequence[screen->size.columns * screen->y + screen->x++] = data;
+    if (screen->x != screen->size.columns && screen->y != screen->size.rows)
+        *frame_sequence[screen->size.columns * screen->y + screen->x++] = data;
 }
 
 
@@ -206,7 +212,20 @@ void vtprintf(Screen *screen, uchar *fmt, ...) {
             vtput_formfeed_pagebreak(screen);
         else if (character == '\v')
             vtput_vertical_tab(screen);
-        else
+        else {
+            if (screen->x == screen->size.columns && screen->y != screen->size.columns)
+                vtput_new_line(screen);
             vtputch(screen, character);
+        }
+    }
+    return;
+}
+
+void vtgprintf(uchar *fmt, ...) {
+    if (GLOBALSCR != NULL) {
+        va_list args;
+        va_start(args, fmt);
+        vtprintf(GLOBALSCR, fmt, args);
+        va_end(args);
     }
 }

@@ -96,12 +96,13 @@ void get_uchar(uchar *output);
 void get_string(uchar *output[]);
 
 // I/O ctl methods
+extern Screen *GLOBALSCR;
 extern uchar *frame_sequence[SCREEN_MAX_PRINTABLE_CHARACTERS];
 extern Size last_frame_size;
 void bound_screen_size(Screen *screen);
 void construct_frame_sequence(Screen *screen);
 void feed_screen_frame(Screen *screen, uchar character);
-void init_screen(Screen *screen);
+void init_screen(Screen *screen, uchar is_global_screen);
 void *draw_screen_frame_thread(void *arg);
 void draw_screen_frame(Screen *screen);
 void vtput_new_line(Screen *screen);
@@ -111,5 +112,6 @@ void vtput_formfeed_pagebreak(Screen *screen);
 void vtput_carriage_return(Screen *screen);
 void vtputch(Screen *screen, uchar data);
 void vtprintf(Screen *screen, uchar *fmt, ...);
+void vtgprintf(uchar *fmt, ...);
 
 #endif // !IO_H

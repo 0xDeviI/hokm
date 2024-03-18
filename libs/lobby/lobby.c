@@ -84,14 +84,14 @@ void deal_cards(Lobby *lobby) {
                 
                 // Asking elder player to specify trump suit
                 uchar suit;
-                printf("Select trump suit (H, D, S, C): ");
-                suit = getchar();
-                while (getchar() != '\n');
-                suit += 32;
+                vtgprintf("Select trump suit (H, D, S, C): ");
+                // getstr(suit);
+                vtgprintf("Suit: %s\n", suit);
+                exit(0);
 
                 // Validating input
                 while (suit != 'h' && suit != 'd' && suit != 's' && suit != 'c') {
-                    printf("Select trump suit (H, D, S, C): ");
+                    vtgprintf("Select trump suit (H, D, S, C): ");
                     suit = getchar();
                     while (getchar() != '\n');
                     suit += 32;
@@ -186,9 +186,9 @@ void print_deck(Card *deck[], uchar size) {
                 for (uchar c = 0 ; c < current_line && line != NULL; c++)
                     line = strtok(NULL, "\n");
 
-                printf(line);
+                vtgprintf(line);
                 if (((j + 1) % (CARDS_PER_ROW) == 0 && j != 0) || ((i + CARDS_PER_ROW > size && j == bound - 1)))
-                    printf("\n");
+                    vtgprintf("\n");
                 free(card_ascii_image);
             }
         }
@@ -237,7 +237,7 @@ void sort_players_based_on_valuable_index(Lobby *lobby, uchar valueable_index) {
 
 
 void specify_elder_player(Lobby *lobby) {
-    printf("Specifying Elder Player. Please wait ...\n");
+    vtgprintf("Specifying Elder Player. Please wait ...\n");
     shuffle_cards(lobby);
     
 
@@ -295,18 +295,18 @@ void setup_deck(Lobby *lobby) {
     }
 
     // specifying eldest player
-    // specify_elder_player(lobby);
+    specify_elder_player(lobby);
     // printf("Shuffling cards. Please wait ...\n");
     shuffle_cards(lobby);
-    // deal_cards(lobby);
+    deal_cards(lobby);
 
     // printf("Printing cards...\n");
 
-    // uchar size_of_players = get_players_size(lobby);
-    // for (uchar i = 0; i < size_of_players; i++) {
-    //     printf("Cards in hand of player %d:\n", i + 1);
-    //     print_deck(lobby->players[i]->cards, lobby->players[i]->size_of_cards);
-    // }
+    uchar size_of_players = get_players_size(lobby);
+    for (uchar i = 0; i < size_of_players; i++) {
+        vtgprintf("Cards in hand of player %d:\n", i + 1);
+        print_deck(lobby->players[i]->cards, lobby->players[i]->size_of_cards);
+    }
 }
 
 

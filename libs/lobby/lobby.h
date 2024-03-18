@@ -67,6 +67,7 @@
     #define OS_WINDOWS 1
     #include <windows.h>
 #endif
+#include "../io/io.h"
 #include "../player/player.h"
 #include "../core/constants.h"
 #include "../cards/suit.h"

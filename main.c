@@ -94,19 +94,17 @@ int main(int argc, char* argv[]) {
 
 
     Screen screen;
-    init_screen(&screen);
+    init_screen(&screen, 1);
     draw_screen_frame(&screen);
     endwin();
 
+
+
     // I don't give a fuck about storms.
-    vtprintf(&screen, "Hello👿 world!\nI'm James Woodcrawl!\n");
-    vtprintf(&screen, "┌─────────┐\n");
+    // vtprintf(&screen, "Hello👿 world!\nI'm James Woodcrawl!\n");
+    // vtprintf(&screen, "┌─────────┐\n");
 
-
-    // create_thread(test, &screen);
     // create_lobby(&lobby, "Freak Fuckers Game!", FOUR_PLAYERS);
-    // vtprintf(&screen, lobby.deck[0]->card_ascii_image);
-
     // destroy_lobby(&lobby);
     // return 0;
     pthread_exit(NULL);
