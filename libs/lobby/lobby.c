@@ -84,17 +84,13 @@ void deal_cards(Lobby *lobby) {
                 
                 // Asking elder player to specify trump suit
                 uchar suit;
-                vtgprintf("Select trump suit (H, D, S, C): ");
-                // getstr(suit);
-                vtgprintf("Suit: %s\n", suit);
-                exit(0);
+                vtgprintf("Select trump suit (h, d, s, c): ");
+                get_uchar(&suit);
 
                 // Validating input
                 while (suit != 'h' && suit != 'd' && suit != 's' && suit != 'c') {
-                    vtgprintf("Select trump suit (H, D, S, C): ");
-                    suit = getchar();
-                    while (getchar() != '\n');
-                    suit += 32;
+                    vtgprintf("\nSelect trump suit (h, d, s, c): ");
+                    get_uchar(&suit);
                 }
 
                 // Setting trump suit for lobby object
@@ -296,16 +292,30 @@ void setup_deck(Lobby *lobby) {
 
     // specifying eldest player
     specify_elder_player(lobby);
-    // printf("Shuffling cards. Please wait ...\n");
+    vtgprintf("Shuffling cards. Please wait ...\n");
     shuffle_cards(lobby);
     deal_cards(lobby);
 
-    // printf("Printing cards...\n");
-
     uchar size_of_players = get_players_size(lobby);
-    for (uchar i = 0; i < size_of_players; i++) {
+    for (uchar i; i < size_of_players; i += 1) {
+        vtgclear();
         vtgprintf("Cards in hand of player %d:\n", i + 1);
         print_deck(lobby->players[i]->cards, lobby->players[i]->size_of_cards);
+        sleep(5);
+    }
+}
+
+
+void setup_human_players(Lobby *lobby) {
+    uchar size_of_players = get_players_size(lobby);
+    uchar human_players = 0;
+    for (uchar i = 0; i < size_of_players; i++)
+        human_players += lobby->players[i]->type == HUMAN ? 1 : 0;
+    
+    if (human_players > 0) {
+        for (uchar i = 0; i < human_players; i++) {
+            // TODO: should be implemented.
+        }
     }
 }
 

@@ -97,6 +97,7 @@ void destroy_lobby(Lobby *lobby);
 void sort_players_based_on_valuable_index(Lobby *lobby, uchar valueable_index);
 void specify_elder_player(Lobby *lobby);
 void setup_deck(Lobby *lobby);
+void setup_human_players(Lobby *lobby);
 void create_lobby(Lobby *lobby, char name[], GameType type);
 void play(Lobby *lobby);
 

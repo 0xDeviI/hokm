@@ -55,40 +55,25 @@
 #include "menu.h"
 
 
-void add_menu_option(uchar *text, Menu *menu, function callback) {
+void add_menu_option(uchar *text, Menu *menu, function mo_callback) {
     menu->menu_options[menu->size_of_menu_options] = (MenuOption *) malloc(sizeof(MenuOption));
     MenuOption *menu_option = (MenuOption *) malloc(sizeof(MenuOption));
     strncpy(menu_option->text, text, MENU_MAX_OPTION_LENGTH);
-    menu_option->callback = callback;
+    menu_option->callback = mo_callback;
     menu->menu_options[menu->size_of_menu_options++] = menu_option;
 }
 
 
-void handle_menu(Menu *menu) {
-    uchar selected_menu_option = 1;
-    while (selected_menu_option != 0) {
-        printf("\n");
-        for (uchar i = 0 ; i < menu->size_of_menu_options; i++) {
-            printf("\t%d. %s\n", i + 1, menu->menu_options[i]->text);
-        }
-        printf("\n###: ");
-        get_uchar(&selected_menu_option);
-        if (selected_menu_option <= menu->size_of_menu_options && selected_menu_option != 0) {
-            MenuOption *menu_option = menu->menu_options[--selected_menu_option];
-            if (menu_option != NULL) {
-                function callback_fn = menu_option->callback;
-                if (callback_fn != NULL)
-                    callback_fn();
-            }
-            else
-                printf("Invalid menu option.\n");
-        }
-        else 
-            printf("Invalid menu option.\n");
-    }
+void handle_menu(Menu *menu, Screen *screen) {
+    screen->is_on_menu = 1;
+    // TODO: should be implemented.
 }
 
 
-void init_menu(Menu *menu) {
+void init_menu(Menu *menu, uchar *menu_name) {
     menu->size_of_menu_options = 0;
+    if (strlen(menu_name) < MENU_MAX_NAME)
+        strcpy(menu->name, menu_name);
+    else
+        strcpy(menu->name, "Menu");
 }

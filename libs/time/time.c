@@ -4,7 +4,7 @@
  * 
  * Copyright (c) 2024 Armin Asefi <https://github.com/0xDeviI>
  * 
- * Created Date: Wednesday, February 14th 2024, 3:15:24 am
+ * Created Date: Wednesday, March 20th 2024, 6:10:45 pm
  * Author: Armin Asefi
  * 
  * This license agreement (the "License") is a legal agreement between 
@@ -52,18 +52,12 @@
  */
 
 
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#include "time.h"
 
-#include <pthread.h>
-
-typedef unsigned char uchar;
-typedef unsigned short ushort;
-typedef unsigned long ulong;
-typedef unsigned int uint;
-typedef void (*function)(void);             // normal function
-typedef void (*a_function)(void *);         // anonymous-paramterized function
-typedef void *(*t_function)(void *vargp);   // a pointer to a thread function
-typedef pthread_t thread;
-
-#endif
+void sleepmsf(int milliseconds) {
+   clock_t end_time;
+   end_time = clock() + milliseconds * CLOCKS_PER_SEC/1000;
+   while (clock() < end_time) {
+      // empty loop for waiting
+   }
+}

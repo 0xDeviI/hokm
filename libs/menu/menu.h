@@ -71,12 +71,13 @@ typedef struct MenuOption
 
 typedef struct Menu
 {
+    uchar name[MENU_MAX_NAME];
     MenuOption *menu_options[MENU_MAX_OPTIONS_PER_MENU];
     uchar size_of_menu_options;
 } Menu;
 
-void add_menu_option(uchar *text, Menu *menu, function callback);
-void handle_menu(Menu *menu);
-void init_menu(Menu *menu);
+void add_menu_option(uchar *text, Menu *menu, function mo_callback);
+void handle_menu(Menu *menu, Screen *screen);
+void init_menu(Menu *menu, uchar *menu_name);
 
 #endif // !MENU_H

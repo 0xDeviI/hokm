@@ -56,7 +56,9 @@ NAME=hokm-engine
 CC=gcc
 OUTPUT_DIR=./bin
 OUTPUT_FILE=$(OUTPUT_DIR)/$(NAME)
-FILES=main.c libs/lobby/lobby.c libs/cards/card.c libs/menu/menu.c libs/io/io.c game/menu/menu.c libs/thread/thread.c
+FILES=main.c
+LIBS=$(wildcard libs/**/*.c)
+GAME=$(wildcard game/**/*.c)
 FLAGS=-Ilibs -Iabstraction $(shell pkg-config --libs --cflags ncursesw)
 
 clean:
@@ -64,4 +66,4 @@ clean:
 
 build: clean
 	mkdir ./bin
-	$(CC) -o $(OUTPUT_FILE) $(FILES) $(FLAGS)
+	$(CC) -o $(OUTPUT_FILE) $(FILES) $(LIBS) $(GAME) $(FLAGS)

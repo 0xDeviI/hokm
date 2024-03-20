@@ -77,6 +77,7 @@
 // ########### Menu Constants ###########
 #define MENU_MAX_OPTION_LENGTH 64
 #define MENU_MAX_OPTIONS_PER_MENU 16
+#define MENU_MAX_NAME 32
 
 
 // ########### Memory Logic Constants ###########
