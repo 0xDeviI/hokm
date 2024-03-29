@@ -46,8 +46,8 @@
  * 
  * 6. GOVERNING LAW
  * THIS LICENSE SHALL BE GOVERNED BY AND CONSTRUED IN ACCORDANCE WITH THE
- * LAWS OF --IRAN, ISLAMIC REPUBLIC--. ANY DISPUTES ARISING UNDER THIS LICENSE
- * SHALL BE SUBJECT TO THE EXCLUSIVE JURISDICTION OF THE COURTS IN --IRAN, ISLAMIC REPUBLIC--.
+ * LAWS OF --IRAN, ISLAMIC REPUBLIC OF--. ANY DISPUTES ARISING UNDER THIS LICENSE
+ * SHALL BE SUBJECT TO THE EXCLUSIVE JURISDICTION OF THE COURTS IN --IRAN, ISLAMIC REPUBLIC OF--.
  * 
  */
 
@@ -62,8 +62,8 @@ typedef unsigned short ushort;
 typedef unsigned long ulong;
 typedef unsigned int uint;
 typedef void (*function)(void);             // normal function
-typedef void (*a_function)(void *);         // anonymous-paramterized function
-typedef void *(*t_function)(void *vargp);   // a pointer to a thread function
+typedef void (*a_function)(void *arg);         // anonymous-paramterized function
+typedef void *(*t_function)(void *arg);   // a pointer to a thread function
 typedef pthread_t thread;
 
 #endif

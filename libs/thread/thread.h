@@ -46,8 +46,8 @@
  * 
  * 6. GOVERNING LAW
  * THIS LICENSE SHALL BE GOVERNED BY AND CONSTRUED IN ACCORDANCE WITH THE
- * LAWS OF --IRAN, ISLAMIC REPUBLIC--. ANY DISPUTES ARISING UNDER THIS LICENSE
- * SHALL BE SUBJECT TO THE EXCLUSIVE JURISDICTION OF THE COURTS IN --IRAN, ISLAMIC REPUBLIC--.
+ * LAWS OF --IRAN, ISLAMIC REPUBLIC OF--. ANY DISPUTES ARISING UNDER THIS LICENSE
+ * SHALL BE SUBJECT TO THE EXCLUSIVE JURISDICTION OF THE COURTS IN --IRAN, ISLAMIC REPUBLIC OF--.
  * 
  */
 
@@ -55,16 +55,19 @@
 #ifndef THREAD_H
 #define THREAD_H
 
+#include <string.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include "../core/constants.h"
 #include "../core/globals.h"
 
-extern thread *threads_cluster[];
-extern ushort threads_cluster_size;
-void terminate_thread(thread *thread);
+
+extern thread *threads_pool[];
+extern ushort threads_pool_size;
+
+
+void terminate_thread(thread *_thread);
 thread *create_thread(t_function func, void *arg);
-void run_thread(thread *thread);
 void clear_thread_mem_pool(void);
 
 #endif // !THREAD_H

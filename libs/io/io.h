@@ -75,31 +75,6 @@
 #include "../core/globals.h"
 
 
-// Colors
-#define VT_COLOR_NORMAL "\e[m"
-// ---- Bold text
-#define VT_COLOR_BOLD "\e[1m"
-// ---- Foregorund colors
-#define VT_COLOR_BLACK "\e[30m"
-#define VT_COLOR_RED "\e[31m"
-// #define VT_COLOR_RED "\e~rf"
-#define VT_COLOR_GREEN "\e[32m"
-#define VT_COLOR_YELLOW "\e[33m"
-#define VT_COLOR_BLUE "\e[34m"
-#define VT_COLOR_MAGENTA "\e[35m"
-#define VT_COLOR_CYAN "\e[36m"
-#define VT_COLOR_WHITE "\e[37m"
-// ---- Background colors
-#define VT_COLOR_BG_BLACK "\e[40m"
-#define VT_COLOR_BG_RED "\e[41m"
-#define VT_COLOR_BG_GREEN "\e[42m"
-#define VT_COLOR_BG_YELLOW "\e[43m"
-#define VT_COLOR_BG_BLUE "\e[44m"
-#define VT_COLOR_BG_MAGENTA "\e[45m"
-#define VT_COLOR_BG_CYAN "\e[46m"
-#define VT_COLOR_BG_WHITE "\e[47m"
-
-
 typedef struct Size
 {
     volatile ushort rows;
@@ -157,7 +132,8 @@ void get_string(uchar output[]);
 extern Screen *GLOBALSCR;
 extern Size last_frame_size;
 extern struct winsize window;
-
+extern uchar screen_size_revert;
+extern volatile sig_atomic_t is_resized;
 
 // ---- Arrow keys
 extern a_function up_key_handler;
@@ -172,7 +148,7 @@ void right_key_handlerf(void *arg);                     // handler function
 void *arrow_key_hit_check_thread(void *arg);
 
 // ---- Screen
-void bound_screen_size(Screen *screen);
+void bound_screen_size(Size *size);
 void construct_frame_sequence(Screen *screen);
 void feed_screen_frame(Screen *screen, uchar character);
 void init_screen(Screen *screen, uchar is_global_screen);
@@ -180,6 +156,8 @@ void *draw_screen_frame_thread(void *arg);
 void draw_screen_frame(Screen *screen);
 
 // ---- VTOutput
+void prepare_to_print_center(Location *location, Size *context_size, 
+    ushort longest_size, ushort lines, ushort y_offset);
 void vtput_new_line(Screen *screen);
 void vtput_horizontal_tab(Screen *screen);
 void vtput_vertical_tab(Screen *screen);
@@ -193,8 +171,9 @@ void vtclear(Screen *screen);
 void vtgclear(void);
 
 // ---- Style
+void clear_color_state_lists(Screen *screen);
 uchar is_color_pair_exists(Screen *screen, CellColor cell_color);
-void add_screen_style(Screen *screen, ushort y, ushort x, ushort range, short foreground, short background, uint style);
+ushort add_screen_style(Screen *screen, Location *location, ushort range, short foreground, short background, uint style);
 // I/O ctl methods //
 
 #endif // !IO_H

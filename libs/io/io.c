@@ -46,8 +46,8 @@
  * 
  * 6. GOVERNING LAW
  * THIS LICENSE SHALL BE GOVERNED BY AND CONSTRUED IN ACCORDANCE WITH THE
- * LAWS OF --IRAN, ISLAMIC REPUBLIC--. ANY DISPUTES ARISING UNDER THIS LICENSE
- * SHALL BE SUBJECT TO THE EXCLUSIVE JURISDICTION OF THE COURTS IN --IRAN, ISLAMIC REPUBLIC--.
+ * LAWS OF --IRAN, ISLAMIC REPUBLIC OF--. ANY DISPUTES ARISING UNDER THIS LICENSE
+ * SHALL BE SUBJECT TO THE EXCLUSIVE JURISDICTION OF THE COURTS IN --IRAN, ISLAMIC REPUBLIC OF--.
  * 
  */
 
@@ -78,8 +78,8 @@ void get_string(uchar output[]) {
 // I/O ctl methods
 // ---- Global screen varibales
 Screen *GLOBALSCR = NULL;
-Size last_frame_size;
 struct winsize window;
+uchar screen_size_revert = 0;
 
 // ---- Arrow keys
 a_function up_key_handler;
@@ -129,34 +129,60 @@ void right_key_handlerf(void *arg) {
 }
 
 
+volatile sig_atomic_t is_resized = 0;
+
+
+void handle_resize_signal(int signal) {
+    if (signal == SIGWINCH)
+        is_resized = 1;
+}
+
 void *arrow_key_hit_check_thread(void *arg) {
     // Up Arrow         0x1B 0x5B 0x41
     // Down Arrow       0x1B 0x5B 0x42
     // Left Arrow       0x1B 0x5B 0x44
     // Right Arrow      0x1B 0x5B 0x43
-    for (ushort seq = getch(); seq; seq = getch()) {
-        switch(seq) {
-            case KEY_UP: vtgprintf("UP\n"); break;
-            case KEY_DOWN: vtgprintf("DOWN\n"); break;
-            case KEY_LEFT: vtgprintf("LEFT\n"); break;
-            case KEY_RIGHT: vtgprintf("RIGHT\n"); break;
+    WINDOW *win = newwin(1, 1, 0, 0);
+    keypad(win, TRUE);
+    int ch;
+    while (1) {
+        ch = wgetch(win);
+        switch(ch) {
+            case KEY_UP:
+            up_key_handlerf(NULL);
+                break;
+            case KEY_DOWN:
+            down_key_handlerf(NULL);
+                break;
+            case KEY_LEFT:
+            left_key_handlerf(NULL);
+                break; 
+            case KEY_RIGHT:
+            right_key_handlerf(NULL);
+                break;
         }
     }
 }
 
 // ---- Screen
-void bound_screen_size(Screen *screen) {
-    if (screen->size.rows > SCREEN_MAX_ROWS)
-        screen->size.rows = SCREEN_MAX_ROWS;
-    if (screen->size.columns > SCREEN_MAX_COLUMNS)
-        screen->size.columns = SCREEN_MAX_COLUMNS;
+void bound_screen_size(Size *size) {
+    if (size->rows > SCREEN_MAX_ROWS)
+        size->rows = SCREEN_MAX_ROWS;
+    if (size->columns > SCREEN_MAX_COLUMNS)
+        size->columns = SCREEN_MAX_COLUMNS;
+    if (size->rows < SCREEN_MIN_ROWS)
+        size->rows = SCREEN_MIN_ROWS;
+    if (size->columns < SCREEN_MIN_COLUMNS)
+        size->columns = SCREEN_MIN_COLUMNS;
+		
+		// heys
 }
 
 
 void construct_frame_sequence(Screen *screen) {
-    for (ushort i = 0 ; i < last_frame_size.rows; i++)
-        for (ushort j = 0 ; j < last_frame_size.columns; j++)
-            screen->frame_sequence[last_frame_size.columns * i + j] = &screen->frame[i][j];
+    for (ushort i = 0 ; i < screen->size.rows; i++)
+        for (ushort j = 0 ; j < screen->size.columns; j++)
+            screen->frame_sequence[screen->size.columns * i + j] = &screen->frame[i][j];
 }
 
 
@@ -173,11 +199,11 @@ void init_screen(Screen *screen, uchar is_global_screen) {
     screen->location.y = 0;
     screen->size.rows = window.ws_row;
     screen->size.columns = window.ws_col;
-    last_frame_size = screen->size;
-    bound_screen_size(screen);
+    bound_screen_size(&screen->size);
     feed_screen_frame(screen, SCREEN_EMPTY_SPACE_CHARACTER);
     screen->is_on_menu = 0;
     screen->style_state_list_size = 0;
+    is_resized = 0;
 
     // Constructing frame sequence
     construct_frame_sequence(screen);
@@ -185,6 +211,9 @@ void init_screen(Screen *screen, uchar is_global_screen) {
     // Setting global screen
     if (is_global_screen)
         GLOBALSCR = screen;
+
+    // Resize handler
+    signal(SIGWINCH, handle_resize_signal);
 
     // ncurses init
     setlocale(LC_ALL, ""); // required in order to show ASCII emojis
@@ -207,12 +236,10 @@ void *draw_screen_frame_thread(void *arg) {
     while (1) {
         erase();
         for (ushort i = 0; i < screen->size.rows; i++) {
-            ioctl(STDOUT_FILENO, TIOCGWINSZ, &window);
-            last_frame_size.rows = window.ws_row;
-            last_frame_size.columns = window.ws_col;
-            if (screen->size.rows != last_frame_size.rows || screen->size.columns != last_frame_size.columns) {
-                screen->size = last_frame_size;
-                construct_frame_sequence(screen);
+            if (is_resized) {
+                endwin();
+                refresh();
+                init_screen(screen, memcmp(screen, GLOBALSCR, sizeof(Screen *)) == 0);
             }
 
             uchar *row_frame_sequence[screen->size.columns];
@@ -221,11 +248,12 @@ void *draw_screen_frame_thread(void *arg) {
             mvprintw(i, 0, *row_frame_sequence);
 
             for (uchar j = 0; j < screen->style_state_list_size; j++) {
-                attron(COLOR_PAIR(screen->style_state_list[j].code));
-                mvchgat(screen->style_state_list[j].location.y, screen->style_state_list[j].location.x, 
-                screen->style_state_list[j].length, screen->style_state_list[j].style, 
-                screen->style_state_list[j].code, NULL);
-                attroff(COLOR_PAIR(screen->style_state_list[j].code));
+                StyleState style_state = screen->style_state_list[j];
+                attron(COLOR_PAIR(style_state.code));
+                mvchgat(style_state.location.y, style_state.location.x, 
+                style_state.length, style_state.style, 
+                style_state.code, NULL);
+                attroff(COLOR_PAIR(style_state.code));
             }
         }
         refresh();
@@ -234,11 +262,21 @@ void *draw_screen_frame_thread(void *arg) {
 
 
 void draw_screen_frame(Screen *screen) {
-    // create_thread(arrow_key_hit_check_thread, NULL);
+    create_thread(arrow_key_hit_check_thread, NULL);
     create_thread(draw_screen_frame_thread, (void *) screen);
 }
 
 // ---- VTOutput
+void prepare_to_print_center(Location *location, Size *context_size, 
+    ushort longest_size, ushort rows, ushort y_offset) {
+    
+    if (context_size->columns - longest_size >= 0) {
+        location->x = ((ushort) (context_size->columns - longest_size) / 2);
+        location->y = ((ushort) (context_size->rows - rows) / 2) + y_offset;
+    }
+}
+
+
 void vtput_new_line(Screen *screen) {
     screen->location.x = (screen->location.y != screen->size.rows ? screen->location.y++ : 1) == -1;
 }
@@ -309,12 +347,16 @@ void vtprintf(Screen *screen, uchar *fmt, ...) {
         ushort size_of_buffer = strlen(buffer);
         ushort printed_buffer = 0;
         while (printed_buffer < size_of_buffer) {
-            uchar character = buffer[printed_buffer++];
-            if (vtcheck_especial_character(screen, character, buffer, &printed_buffer) == 0) {
-                if (screen->location.x == screen->size.columns && screen->location.y != screen->size.columns)
-                    vtput_new_line(screen);
-                vtputch(screen, character);
+            if (printed_buffer < screen->size.columns * screen->size.rows) {
+                uchar character = buffer[printed_buffer++];
+                if (vtcheck_especial_character(screen, character, buffer, &printed_buffer) == 0) {
+                    if (screen->location.x == screen->size.columns && screen->location.y != screen->size.columns)
+                        vtput_new_line(screen);
+                    vtputch(screen, character);
+                }
             }
+            else
+                break;
         }
     }
     return;
@@ -334,7 +376,10 @@ void vtgprintf(uchar *fmt, ...) {
 
 
 void vtclear(Screen *screen) {
-    strncpy(*screen->frame_sequence, (uchar[2]) { SCREEN_EMPTY_SPACE_CHARACTER, '\0' }, screen->size.rows * screen->size.columns);
+    clear_color_state_lists(screen);
+    for (uchar i = 0 ; i < screen->size.rows; i++)
+        for (uchar j = 0; j < screen->size.columns; j++)
+            screen->frame[i][j] = SCREEN_EMPTY_SPACE_CHARACTER;
     screen->location.x = 0;
     screen->location.y = 0;
 }
@@ -345,6 +390,11 @@ void vtgclear(void) {
 }
 
 // ---- Style
+void clear_color_state_lists(Screen *screen) {
+    screen->style_state_list_size = 0;
+}
+
+
 uchar is_color_pair_exists(Screen *screen, CellColor cell_color) {
     for (ushort i = 0; i < screen->style_state_list_size; i++) {
         StyleState style_state = screen->style_state_list[i];
@@ -355,7 +405,7 @@ uchar is_color_pair_exists(Screen *screen, CellColor cell_color) {
 }
 
 
-void add_screen_style(Screen *screen, ushort y, ushort x, ushort range, short foreground, short background, uint style) {
+ushort add_screen_style(Screen *screen, Location *location, ushort range, short foreground, short background, uint style) {
     if (screen->style_state_list_size < SCREEN_MAX_PRINTABLE_CHARACTERS) {
         StyleState style_state;
         CellColor cell_color;
@@ -368,9 +418,10 @@ void add_screen_style(Screen *screen, ushort y, ushort x, ushort range, short fo
             init_pair(style_state.code, style_state.colors.foreground, style_state.colors.background);
         }
         style_state.length = range;
-        style_state.location.y = y;
-        style_state.location.x = x;
+        memcpy(&style_state.location, location, sizeof(Location));
         style_state.style = style;
         screen->style_state_list[screen->style_state_list_size++] = style_state;
+        return style_state.code;
     }
+    return 0;
 }

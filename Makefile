@@ -46,8 +46,8 @@
  # 
  # 6. GOVERNING LAW
  # THIS LICENSE SHALL BE GOVERNED BY AND CONSTRUED IN ACCORDANCE WITH THE
- # LAWS OF --IRAN, ISLAMIC REPUBLIC--. ANY DISPUTES ARISING UNDER THIS LICENSE
- # SHALL BE SUBJECT TO THE EXCLUSIVE JURISDICTION OF THE COURTS IN --IRAN, ISLAMIC REPUBLIC--.
+ # LAWS OF --IRAN, ISLAMIC REPUBLIC OF--. ANY DISPUTES ARISING UNDER THIS LICENSE
+ # SHALL BE SUBJECT TO THE EXCLUSIVE JURISDICTION OF THE COURTS IN --IRAN, ISLAMIC REPUBLIC OF--.
  # 
  #
 
@@ -59,11 +59,15 @@ OUTPUT_FILE=$(OUTPUT_DIR)/$(NAME)
 FILES=main.c
 LIBS=$(wildcard libs/**/*.c)
 GAME=$(wildcard game/**/*.c)
-FLAGS=-Ilibs -Iabstraction $(shell pkg-config --libs --cflags ncursesw)
+FLAGS=-Ilibs -Iabstraction $(shell pkg-config --libs --cflags ncursesw) -lSDL2
 
 clean:
 	rm -rf $(OUTPUT_DIR)
 
+copy-assets:
+	cp -r assets $(OUTPUT_DIR)
+
 build: clean
 	mkdir ./bin
+	$(MAKE) copy-assets
 	$(CC) -o $(OUTPUT_FILE) $(FILES) $(LIBS) $(GAME) $(FLAGS)

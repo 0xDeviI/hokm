@@ -46,8 +46,8 @@
  * 
  * 6. GOVERNING LAW
  * THIS LICENSE SHALL BE GOVERNED BY AND CONSTRUED IN ACCORDANCE WITH THE
- * LAWS OF --IRAN, ISLAMIC REPUBLIC--. ANY DISPUTES ARISING UNDER THIS LICENSE
- * SHALL BE SUBJECT TO THE EXCLUSIVE JURISDICTION OF THE COURTS IN --IRAN, ISLAMIC REPUBLIC--.
+ * LAWS OF --IRAN, ISLAMIC REPUBLIC OF--. ANY DISPUTES ARISING UNDER THIS LICENSE
+ * SHALL BE SUBJECT TO THE EXCLUSIVE JURISDICTION OF THE COURTS IN --IRAN, ISLAMIC REPUBLIC OF--.
  * 
  */
 
@@ -56,7 +56,7 @@
 
 
 void add_menu_option(uchar *text, Menu *menu, function mo_callback) {
-    menu->menu_options[menu->size_of_menu_options] = (MenuOption *) malloc(sizeof(MenuOption));
+    menu->menu_options[menu->size_of_menu_options];
     MenuOption *menu_option = (MenuOption *) malloc(sizeof(MenuOption));
     strncpy(menu_option->text, text, MENU_MAX_OPTION_LENGTH);
     menu_option->callback = mo_callback;

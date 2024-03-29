@@ -46,8 +46,8 @@
  * 
  * 6. GOVERNING LAW
  * THIS LICENSE SHALL BE GOVERNED BY AND CONSTRUED IN ACCORDANCE WITH THE
- * LAWS OF --IRAN, ISLAMIC REPUBLIC--. ANY DISPUTES ARISING UNDER THIS LICENSE
- * SHALL BE SUBJECT TO THE EXCLUSIVE JURISDICTION OF THE COURTS IN --IRAN, ISLAMIC REPUBLIC--.
+ * LAWS OF --IRAN, ISLAMIC REPUBLIC OF--. ANY DISPUTES ARISING UNDER THIS LICENSE
+ * SHALL BE SUBJECT TO THE EXCLUSIVE JURISDICTION OF THE COURTS IN --IRAN, ISLAMIC REPUBLIC OF--.
  * 
  */
 
@@ -86,10 +86,15 @@
 
 // ########### Screen Constants ###########
 // The game could run on 2K resolution monitor at its max size: 2560x1440.
-// Values 247x64 calculated from width and height of a console in ARCH linux
+// Values 247x64 calculated from width and height of a console in ARCH GNU/Linux
 // with display size of 1920x1080 as it was 185x48.
 #define SCREEN_MAX_COLUMNS 247
 #define SCREEN_MAX_ROWS 64
+// The game could run on a terminal sized as 80x24 in its minimum screen size.
+// Values 80x24 are gathered from a - 1366x768 display - running a Debian 12 
+// GNU/Linux - gnome desktop environment - default gnome terminal - and its default size. 
+#define SCREEN_MIN_COLUMNS 80
+#define SCREEN_MIN_ROWS 24
 #define SCREEN_MAX_PRINTABLE_CHARACTERS (SCREEN_MAX_COLUMNS * SCREEN_MAX_ROWS)
 #define SCREEN_EMPTY_SPACE_CHARACTER ' '
 #define SCREEN_CELL_MAX_DATA_LENGTH 16
@@ -97,5 +102,9 @@
 
 // ########### Multi-tasking Constants ###########
 #define MT_MAX_PARALLEL_THREADS 1024
+
+
+// ########### Audio Constants ###########
+#define AUDIO_PATH_MAX_NAME 256
 
 #endif

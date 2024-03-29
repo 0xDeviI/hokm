@@ -46,8 +46,8 @@
  * 
  * 6. GOVERNING LAW
  * THIS LICENSE SHALL BE GOVERNED BY AND CONSTRUED IN ACCORDANCE WITH THE
- * LAWS OF --IRAN, ISLAMIC REPUBLIC--. ANY DISPUTES ARISING UNDER THIS LICENSE
- * SHALL BE SUBJECT TO THE EXCLUSIVE JURISDICTION OF THE COURTS IN --IRAN, ISLAMIC REPUBLIC--.
+ * LAWS OF --IRAN, ISLAMIC REPUBLIC OF--. ANY DISPUTES ARISING UNDER THIS LICENSE
+ * SHALL BE SUBJECT TO THE EXCLUSIVE JURISDICTION OF THE COURTS IN --IRAN, ISLAMIC REPUBLIC OF--.
  * 
  */
 
@@ -58,13 +58,26 @@ thread *threads_pool[MT_MAX_PARALLEL_THREADS];
 ushort threads_pool_size = 0;
 
 
-void terminate_thread(thread *thread) {
-    pthread_cancel(*thread);
+void terminate_thread(thread *_thread) {
+    pthread_cancel(*_thread);
+    for (ushort i = 0; i < threads_pool_size; i++) {
+        if (memcmp(_thread, threads_pool[i], sizeof(thread *)) == 0) {
+            free(threads_pool[i]);
+            threads_pool[i] = NULL;
+            for (ushort j = i; j < threads_pool_size - 1; j++) {
+                threads_pool[j] = threads_pool[j + 1];
+            }
+            free(threads_pool[threads_pool_size - 1]);
+            threads_pool[threads_pool_size-- - 1] = NULL;
+            break;
+        }
+    }
 }
 
 
 thread *create_thread(t_function func, void *arg) {
-    if (threads_pool_size == MT_MAX_PARALLEL_THREADS) {
+    if (threads_pool_size >= MT_MAX_PARALLEL_THREADS) {
+        threads_pool_size = MT_MAX_PARALLEL_THREADS;
         terminate_thread(threads_pool[--threads_pool_size]);
         free(threads_pool[threads_pool_size]);
         threads_pool[threads_pool_size] = NULL;
@@ -76,15 +89,8 @@ thread *create_thread(t_function func, void *arg) {
 }
 
 
-void run_thread(thread *thread) {
-    pthread_join(*thread, NULL);
-}
-
-
 void clear_thread_mem_pool(void) {
     for (ushort i = 0; i < threads_pool_size; i++) {
         terminate_thread(threads_pool[i]);
-        free(threads_pool[i]);
-        threads_pool[i] = NULL;
     }
 }

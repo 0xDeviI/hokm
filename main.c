@@ -46,8 +46,8 @@
  * 
  * 6. GOVERNING LAW
  * THIS LICENSE SHALL BE GOVERNED BY AND CONSTRUED IN ACCORDANCE WITH THE
- * LAWS OF --IRAN, ISLAMIC REPUBLIC--. ANY DISPUTES ARISING UNDER THIS LICENSE
- * SHALL BE SUBJECT TO THE EXCLUSIVE JURISDICTION OF THE COURTS IN --IRAN, ISLAMIC REPUBLIC--.
+ * LAWS OF --IRAN, ISLAMIC REPUBLIC OF--. ANY DISPUTES ARISING UNDER THIS LICENSE
+ * SHALL BE SUBJECT TO THE EXCLUSIVE JURISDICTION OF THE COURTS IN --IRAN, ISLAMIC REPUBLIC OF--.
  * 
  */
 
@@ -63,6 +63,8 @@
 // #include <arpa/inet.h>
 #include "libs/menu/menu.h"
 #include "game/menu/menu.h"
+#include "game/splash/splash.h"
+#include "libs/audio/audio.h"
 
 // menu:
 
@@ -74,42 +76,16 @@
 // 6. Exit
 
 int main(int argc, char* argv[]) {
-    // Lobby lobby;
-    // for (uchar i = 0; i < PLAYERS_AVAILABLE; i++) {
-    //     lobby.players[i] = (Player*) malloc(sizeof(Player));
-    //     sprintf(lobby.players[i]->name, "Player %d", i + 1);
-    //     lobby.players[i]->size_of_cards = 0;
-    //     lobby.players[i]->type = HUMAN;
-    // }
-
     Screen screen;
     init_screen(&screen, 1);
     draw_screen_frame(&screen);
     endwin();
 
-    // Menu menu;
-    // init_menu(&menu, "Hokm Engine");
-    // setup_game_menu(&menu);
-    // handle_menu(&menu, &screen);
+    Audio *audio = create_audio("assets/music/IDK_Moskau_8_bit.wav", 1);
+    play_audio(audio);
+    
+    splash_init();
 
-
-    for (uchar i = 0; i < 12; i++)
-        add_screen_style(&screen, i, 0, 54, COLOR_GREEN, COLOR_WHITE, A_BOLD | A_ITALIC);
-    uchar *frame = "\n ▐▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▌ \n"
-                    " ▐.█████...█████..........█████.....................▌ \n"
-                    " ▐░░███...░░███..........░░███......................▌ \n"
-                    " ▐.░███....░███...██████..░███.█████.█████████████..▌ \n"
-                    " ▐.░███████████..███░░███.░███░░███.░░███░░███░░███.▌ \n"
-                    " ▐.░███░░░░░███.░███.░███.░██████░...░███.░███.░███.▌ \n"
-                    " ▐.░███....░███.░███.░███.░███░░███..░███.░███.░███.▌ \n"
-                    " ▐.█████...█████░░██████..████.█████.█████░███.█████▌ \n"
-                    " ▐░░░░░...░░░░░..░░░░░░..░░░░.░░░░░.░░░░░.░░░.░░░░░.▌ \n"
-                    " ▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌ \n";
-    vtgprintf(frame);
-
-    // create_lobby(&lobby, "Freak Fuckers Game!", FOUR_PLAYERS);
-    // destroy_lobby(&lobby);
-    // return 0;
     pthread_exit(NULL);
     clear_thread_mem_pool();
     return 0;
