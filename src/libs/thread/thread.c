@@ -4,7 +4,7 @@
  * 
  * Copyright (c) 2024 Armin Asefi <https://github.com/0xDeviI>
  * 
- * Created Date: Wednesday, February 14th 2024, 3:15:24 am
+ * Created Date: Thursday, March 14th 2024, 2:47:53 am
  * Author: Armin Asefi
  * 
  * This license agreement (the "License") is a legal agreement between 
@@ -52,59 +52,45 @@
  */
 
 
-#ifndef CONSTANTS_H
-#define CONSTANTS_H
+#include "thread.h"
 
-// ########### Lobby Constants ###########
-#define LOBBY_MAX_GAME_NAME 32
+thread *threads_pool[MT_MAX_PARALLEL_THREADS];
+ushort threads_pool_size = 0;
 
-
-// ########### Player Constants ###########
-#define PLAYER_MAX_NAME 32
-#define PLAYERS_AVAILABLE 4
-
-
-// ########### Cards Constants ###########
-#define CARDS_AVAILABLE 52
-#define CARDS_PER_HAND 17
-// #define CARD_INVALID_FLAG 0xA0
-#define CARDS_DECK_SHUFFLE_DEPTH 1
-#define CARDS_MAX_ASCII_IMAGE_LENGTH 160
-#define CARDS_PER_ROW 5
-#define CARDS_MAX_ASCII_IMAGE_HEIGHT 7
-
-
-// ########### Menu Constants ###########
-#define MENU_MAX_OPTION_LENGTH 64
-#define MENU_MAX_OPTIONS_PER_MENU 16
-#define MENU_MAX_NAME 32
+void terminate_thread(thread *_thread) {
+    if (_thread != NULL) {
+        pthread_cancel(*_thread);
+        for (ushort i = 0; i < threads_pool_size; i++) {
+            if (memcmp(_thread, threads_pool[i], sizeof(thread *)) == 0) {
+                free(threads_pool[i]);
+                threads_pool[i] = NULL;
+                for (ushort j = i; j < threads_pool_size - 1; j++) {
+                    threads_pool[j] = threads_pool[j + 1];
+                }
+                threads_pool[--threads_pool_size] = NULL;
+                break;
+            }
+        }
+    }
+}
 
 
-// ########### Memory Logic Constants ###########
-#define MEM_MAX_STRING_BUFFER_LENGTH 32
+thread *create_thread(t_function func, void *arg) {
+    if (func == NULL)
+        return NULL;
+
+    if (threads_pool_size >= MT_MAX_PARALLEL_THREADS) {
+        threads_pool_size = MT_MAX_PARALLEL_THREADS;
+        terminate_thread(threads_pool[--threads_pool_size]);
+    }
+
+    threads_pool[threads_pool_size] = (thread *) malloc(sizeof(thread));
+    pthread_create(threads_pool[threads_pool_size], NULL, func, arg);
+    return threads_pool[threads_pool_size++];
+}
 
 
-// ########### Screen Constants ###########
-// The game could run on 2K resolution monitor at its max size: 2560x1440.
-// Values 247x64 calculated from width and height of a console in ARCH GNU/Linux
-// with display size of 1920x1080 as it was 185x48.
-#define SCREEN_MAX_COLUMNS 247
-#define SCREEN_MAX_ROWS 64
-// The game could run on a terminal sized as 80x24 in its minimum screen size.
-// Values 80x24 are gathered from a - 1366x768 display - running a Debian 12 
-// GNU/Linux - gnome desktop environment - default gnome terminal - and its default size. 
-#define SCREEN_MIN_COLUMNS 80
-#define SCREEN_MIN_ROWS 24
-#define SCREEN_MAX_PRINTABLE_CHARACTERS (SCREEN_MAX_COLUMNS * SCREEN_MAX_ROWS)
-#define SCREEN_EMPTY_SPACE_CHARACTER ' '
-#define SCREEN_CELL_MAX_DATA_LENGTH 16
-
-
-// ########### Multi-tasking Constants ###########
-#define MT_MAX_PARALLEL_THREADS 1024
-
-
-// ########### Audio Constants ###########
-#define AUDIO_PATH_MAX_NAME 256
-
-#endif
+void clear_thread_mem_pool(void) {
+    for (ushort i = 0; i < threads_pool_size; i++)
+        terminate_thread(threads_pool[i]);
+}

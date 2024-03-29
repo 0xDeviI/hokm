@@ -4,7 +4,7 @@
  # 
  # Copyright (c) 2024 Armin Asefi <https://github.com/0xDeviI>
  # 
- # Created Date: Wednesday, February 14th 2024, 3:15:24 am
+ # Created Date: Friday, March 29th 2024, 9:02:15 pm
  # Author: Armin Asefi
  # 
  # This license agreement (the "License") is a legal agreement between 
@@ -52,23 +52,18 @@
  #
 
 
-NAME=hokm-engine
+NAME=test_lib_test
 CC=gcc
-SRC_DIR=./src
-OUTPUT_DIR=./bin
+SRC_DIR=../../src
+OUTPUT_DIR=.
 OUTPUT_FILE=$(OUTPUT_DIR)/$(NAME)
-FILES=$(SRC_DIR)/main.c
-LIBS=$(wildcard ${SRC_DIR}/libs/**/*.c)
-GAME=$(wildcard ${SRC_DIR}/game/**/*.c)
-FLAGS=-Ilibs -Iabstraction $(shell pkg-config --libs --cflags ncursesw) -lSDL2
+FILES=./test_thread.c
+LIBS=$(wildcard ${SRC_DIR}/libs/thread/*.c)
+LIBS:=$(LIBS) $(wildcard ${SRC_DIR}/libs/time/*.c)
+FLAGS=-Ilibs -Iabstraction -lcheck -pthread -lrt
 
 clean:
-	rm -rf $(OUTPUT_DIR)
-
-copy-assets:
-	cp -r assets $(OUTPUT_DIR)
+	rm $(OUTPUT_FILE)
 
 build: clean
-	mkdir $(OUTPUT_DIR)
-	$(MAKE) copy-assets
-	$(CC) -o $(OUTPUT_FILE) $(FILES) $(LIBS) $(GAME) $(FLAGS)
+	$(CC) -o $(OUTPUT_FILE) $(FILES) $(LIBS) $(FLAGS)

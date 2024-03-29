@@ -61,10 +61,8 @@
 #include "../core/constants.h"
 #include "../core/globals.h"
 
-
 extern thread *threads_pool[];
 extern ushort threads_pool_size;
-
 
 void terminate_thread(thread *_thread);
 thread *create_thread(t_function func, void *arg);

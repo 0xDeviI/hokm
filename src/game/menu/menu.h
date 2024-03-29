@@ -55,7 +55,7 @@
 #ifndef GAME_MENU
 #define GAME_MENU
 
-#include "../libs/menu/menu.h"
+#include "../../libs/menu/menu.h"
 
 void menu_create_game(void);
 void menu_join_game(void);
