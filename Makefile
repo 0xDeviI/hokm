@@ -52,6 +52,7 @@
  #
 
 
+# Hokm
 NAME=hokm-engine
 CC=gcc
 SRC_DIR=./src
@@ -59,8 +60,17 @@ OUTPUT_DIR=./bin
 OUTPUT_FILE=$(OUTPUT_DIR)/$(NAME)
 FILES=$(SRC_DIR)/main.c
 LIBS=$(wildcard ${SRC_DIR}/libs/**/*.c)
+CRYPTO_LIBS=$(wildcard ${SRC_DIR}/libs/crypto/**/*.c)
+LIBS:=$(LIBS) $(CRYPTO_LIBS) $(wildcard ${SRC_DIR}/casset/casset.c)
 GAME=$(wildcard ${SRC_DIR}/game/**/*.c)
-FLAGS=-Ilibs -Iabstraction $(shell pkg-config --libs --cflags ncursesw) -lSDL2
+FLAGS=-Ilibs -Iabstraction $(shell pkg-config --libs --cflags ncursesw sdl2 openssl)
+
+# Casset
+CASSET_OUTPUT_FILE=$(OUTPUT_DIR)/casset
+CASSET_LIBS=$(SRC_DIR)/libs
+CASSET_FILES=$(CASSET_LIBS)/io/io.c $(CASSET_LIBS)/thread/thread.c $(CASSET_LIBS)/sys/sys.c
+CASSET_FILES:=$(CASSET_FILES) $(SRC_DIR)/casset/casset.c $(wildcard ${CASSET_LIBS}/crypto/**/*.c)
+CASSET_FLAGS=-Ilibs -Iabstraction $(shell pkg-config --libs --cflags ncursesw openssl)
 
 clean:
 	rm -rf $(OUTPUT_DIR)
@@ -68,7 +78,13 @@ clean:
 copy-assets:
 	cp -r assets $(OUTPUT_DIR)
 
-build: clean
+casset:
+	$(CC) -o $(CASSET_OUTPUT_FILE) $(SRC_DIR)/casset/main.c $(CASSET_FILES) $(CASSET_FLAGS)
+
+casset-clean:
+
+create-output-dir: clean
 	mkdir $(OUTPUT_DIR)
-	$(MAKE) copy-assets
+
+build: create-output-dir casset casset-clean
 	$(CC) -o $(OUTPUT_FILE) $(FILES) $(LIBS) $(GAME) $(FLAGS)

@@ -57,22 +57,26 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "../thread/thread.h"
+#include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <string.h>
 #include <locale.h>
 #include <ncurses.h>
 #include <stdarg.h>
 #include <signal.h>
-#ifdef __unix__
-    #define OS_WINDOWS 0
-    #include <unistd.h>
-#elif defined(_WIN32)
-    #define OS_WINDOWS 1
-    #include <windows.h>
-#endif
 #include "../core/constants.h"
 #include "../core/globals.h"
+#include "../thread/thread.h"
+
+#ifdef __unix__
+    #include <unistd.h>
+    #include <fcntl.h>
+#elif defined(OS_WINDOWS)
+    #include <windows.h>
+    #include <io.h>
+    #define F_OK 0
+    #define access _access
+#endif
 
 
 typedef struct Size
@@ -134,6 +138,7 @@ extern Size last_frame_size;
 extern struct winsize window;
 extern uchar screen_size_revert;
 extern volatile sig_atomic_t is_resized;
+extern uchar cwd[SYS_MAX_EXE_PATH_LENGTH];
 
 // ---- Arrow keys
 extern a_function up_key_handler;
@@ -174,6 +179,12 @@ void vtgclear(void);
 void clear_color_state_lists(Screen *screen);
 uchar is_color_pair_exists(Screen *screen, CellColor cell_color);
 ushort add_screen_style(Screen *screen, Location *location, ushort range, short foreground, short background, uint style);
+
+// ---- System
+ullong get_file_size(uchar *file_path);
+void get_cwd_path(uchar *file_path, ushort size_of_file_path);
+uchar is_sproc_exists(void);        // checks for existance of /proc
+void init_io_system(char* argv[]);
 // I/O ctl methods //
 
 #endif // !IO_H

@@ -4,7 +4,7 @@
  * 
  * Copyright (c) 2024 Armin Asefi <https://github.com/0xDeviI>
  * 
- * Created Date: Thursday, March 14th 2024, 2:47:53 am
+ * Created Date: Sunday, March 31st 2024, 4:15:40 am
  * Author: Armin Asefi
  * 
  * This license agreement (the "License") is a legal agreement between 
@@ -52,45 +52,27 @@
  */
 
 
-#include "thread.h"
+#include "sha512.h"
 
-thread *threads_pool[MT_MAX_PARALLEL_THREADS];
-ushort threads_pool_size = 0;
+void generate_sha512_hash(const uchar *input, size_t input_len, uchar *hash)
+{
+    EVP_MD_CTX *mdctx;
+    const EVP_MD *md = EVP_sha512();
+    uint hash_len;
 
-void terminate_thread(thread *_thread) {
-    if (_thread != NULL) {
-        pthread_cancel(*_thread);
-        for (ushort i = 0; i < threads_pool_size; i++) {
-            if (memcmp(_thread, threads_pool[i], sizeof(thread)) == 0) {
-                free(threads_pool[i]);
-                threads_pool[i] = NULL;
-                for (ushort j = i; j < threads_pool_size - 1; j++) {
-                    threads_pool[j] = threads_pool[j + 1];
-                }
-                threads_pool[--threads_pool_size] = NULL;
-                break;
-            }
-        }
-    }
+    mdctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(mdctx, md, NULL);
+    EVP_DigestUpdate(mdctx, input, input_len);
+    EVP_DigestFinal_ex(mdctx, hash, &hash_len);
+    EVP_MD_CTX_free(mdctx);
 }
 
 
-thread *create_thread(t_function func, void *arg) {
-    if (func == NULL)
-        return NULL;
-
-    if (threads_pool_size >= MT_MAX_PARALLEL_THREADS) {
-        threads_pool_size = MT_MAX_PARALLEL_THREADS;
-        terminate_thread(threads_pool[--threads_pool_size]);
+void sha512_to_hex_string(uchar *hash, uchar *output) {
+    const char hex_digits[] = "0123456789abcdef";
+    for (int i = 0; i < SHA512_HASH_SIZE; i++) {
+        output[i * 2] = hex_digits[hash[i] >> 4];
+        output[i * 2 + 1] = hex_digits[hash[i] & 0x0F];
     }
-
-    threads_pool[threads_pool_size] = (thread *) malloc(sizeof(thread));
-    pthread_create(threads_pool[threads_pool_size], NULL, func, arg);
-    return threads_pool[threads_pool_size++];
-}
-
-
-void clear_thread_mem_pool(void) {
-    for (ushort i = 0; i < threads_pool_size; i++)
-        terminate_thread(threads_pool[i]);
+    output[SHA512_HASH_SIZE * 2] = '\0';
 }

@@ -4,7 +4,7 @@
  * 
  * Copyright (c) 2024 Armin Asefi <https://github.com/0xDeviI>
  * 
- * Created Date: Thursday, March 14th 2024, 2:47:53 am
+ * Created Date: Saturday, March 30th 2024, 9:21:02 pm
  * Author: Armin Asefi
  * 
  * This license agreement (the "License") is a legal agreement between 
@@ -52,45 +52,27 @@
  */
 
 
-#include "thread.h"
+#ifndef CASSET_H
+#define CASSET_H
 
-thread *threads_pool[MT_MAX_PARALLEL_THREADS];
-ushort threads_pool_size = 0;
+#include "../libs/io/io.h"
+#include "../libs/crypto/mspc/mspc.h"
+#include "../libs/crypto/aes/aes.h"
 
-void terminate_thread(thread *_thread) {
-    if (_thread != NULL) {
-        pthread_cancel(*_thread);
-        for (ushort i = 0; i < threads_pool_size; i++) {
-            if (memcmp(_thread, threads_pool[i], sizeof(thread)) == 0) {
-                free(threads_pool[i]);
-                threads_pool[i] = NULL;
-                for (ushort j = i; j < threads_pool_size - 1; j++) {
-                    threads_pool[j] = threads_pool[j + 1];
-                }
-                threads_pool[--threads_pool_size] = NULL;
-                break;
-            }
-        }
-    }
-}
+#define SIZE_OF_CAS_V1_HEADER 16
 
 
-thread *create_thread(t_function func, void *arg) {
-    if (func == NULL)
-        return NULL;
+extern uchar CAS_V1_HEADER[SIZE_OF_CAS_V1_HEADER];
 
-    if (threads_pool_size >= MT_MAX_PARALLEL_THREADS) {
-        threads_pool_size = MT_MAX_PARALLEL_THREADS;
-        terminate_thread(threads_pool[--threads_pool_size]);
-    }
+uchar get_file_from_cas(uchar *file_id, uchar size_of_file_id, uchar *buffer);
+void get_cas_file_path(uchar *cas_file_path, ushort size_of_cas_file_path);
+uchar is_cas_exists(void);
+uchar is_cas_valid(void);
+void generate_cas(void);
+void init_cas_bundle(void);
+void init_casset();
+uchar copy_n_bytes(uchar *out, ullong offset, ullong size, FILE *fp);
+void create_aes_payload_buffer(uchar *file_content, ullong size_of_file, uchar *file_id, ullong size_of_file_id, ullong offset, FILE *fp);
+uchar insert_file_to_casset(uchar *file_id, uchar size_of_file_id, uchar *file_path);
 
-    threads_pool[threads_pool_size] = (thread *) malloc(sizeof(thread));
-    pthread_create(threads_pool[threads_pool_size], NULL, func, arg);
-    return threads_pool[threads_pool_size++];
-}
-
-
-void clear_thread_mem_pool(void) {
-    for (ushort i = 0; i < threads_pool_size; i++)
-        terminate_thread(threads_pool[i]);
-}
+#endif // !CASSET_H

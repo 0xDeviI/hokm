@@ -63,7 +63,7 @@ LIBS:=$(LIBS) $(wildcard ${SRC_DIR}/libs/time/*.c)
 FLAGS=-Ilibs -Iabstraction -lcheck -pthread -lrt
 
 clean:
-	rm $(OUTPUT_FILE)
+	rm -rf $(OUTPUT_FILE)
 
 build: clean
 	$(CC) -o $(OUTPUT_FILE) $(FILES) $(LIBS) $(FLAGS)

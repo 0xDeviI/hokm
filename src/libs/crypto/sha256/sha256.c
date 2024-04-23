@@ -4,7 +4,7 @@
  * 
  * Copyright (c) 2024 Armin Asefi <https://github.com/0xDeviI>
  * 
- * Created Date: Thursday, March 14th 2024, 2:47:53 am
+ * Created Date: Sunday, March 31st 2024, 2:21:18 am
  * Author: Armin Asefi
  * 
  * This license agreement (the "License") is a legal agreement between 
@@ -52,45 +52,57 @@
  */
 
 
-#include "thread.h"
+#include "sha256.h"
 
-thread *threads_pool[MT_MAX_PARALLEL_THREADS];
-ushort threads_pool_size = 0;
 
-void terminate_thread(thread *_thread) {
-    if (_thread != NULL) {
-        pthread_cancel(*_thread);
-        for (ushort i = 0; i < threads_pool_size; i++) {
-            if (memcmp(_thread, threads_pool[i], sizeof(thread)) == 0) {
-                free(threads_pool[i]);
-                threads_pool[i] = NULL;
-                for (ushort j = i; j < threads_pool_size - 1; j++) {
-                    threads_pool[j] = threads_pool[j + 1];
-                }
-                threads_pool[--threads_pool_size] = NULL;
-                break;
-            }
-        }
-    }
+void generate_sha256_hash(const uchar *input, size_t input_len, uchar *hash) {
+    EVP_MD_CTX *mdctx;
+    const EVP_MD *md = EVP_sha256();
+    uint hash_len;
+
+    mdctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(mdctx, md, NULL);
+    EVP_DigestUpdate(mdctx, input, input_len);
+    EVP_DigestFinal_ex(mdctx, hash, &hash_len);
+    EVP_MD_CTX_free(mdctx);
 }
 
 
-thread *create_thread(t_function func, void *arg) {
-    if (func == NULL)
-        return NULL;
+void generate_sha256_hmac_hash(const uchar *key, size_t key_len, const uchar *input, size_t input_len, uchar *hash, size_t hash_size) {
+	EVP_MAC *mac = EVP_MAC_fetch(NULL, "HMAC", NULL);
+    const char *digest = "SHA256";
+    EVP_MAC_CTX *ctx = NULL;
+    OSSL_PARAM params[3];
+    size_t params_n = 0;
 
-    if (threads_pool_size >= MT_MAX_PARALLEL_THREADS) {
-        threads_pool_size = MT_MAX_PARALLEL_THREADS;
-        terminate_thread(threads_pool[--threads_pool_size]);
-    }
+    params[params_n++] = OSSL_PARAM_construct_utf8_string("digest", (char*)digest, 0);
+    params[params_n] = OSSL_PARAM_construct_end();
 
-    threads_pool[threads_pool_size] = (thread *) malloc(sizeof(thread));
-    pthread_create(threads_pool[threads_pool_size], NULL, func, arg);
-    return threads_pool[threads_pool_size++];
+    if (mac == NULL || key == NULL || (ctx = EVP_MAC_CTX_new(mac)) == NULL ||
+        !EVP_MAC_init(ctx, key, key_len, params))
+        goto err;
+
+    if (!EVP_MAC_update(ctx, input, input_len) ||
+        !EVP_MAC_final(ctx, hash, &input_len, EVP_MAX_MD_SIZE))
+        goto err;
+
+    EVP_MAC_CTX_free(ctx);
+    EVP_MAC_free(mac);
+    return;
+
+err:
+    EVP_MAC_CTX_free(ctx);
+    EVP_MAC_free(mac);
+    fprintf(stderr, "Error in generating HMAC hash\n");
+    ERR_print_errors_fp(stderr);
 }
 
 
-void clear_thread_mem_pool(void) {
-    for (ushort i = 0; i < threads_pool_size; i++)
-        terminate_thread(threads_pool[i]);
+void sha256_to_hex_string(uchar *hash, uchar *output) {
+    uchar hex_digits[] = "0123456789abcdef";
+    for (uchar i = 0; i < SHA256_HASH_SIZE; i++) {
+        output[i * 2] = hex_digits[hash[i] >> 4];
+        output[i * 2 + 1] = hex_digits[hash[i] & 0x0F];
+    }
+    output[SHA256_HASH_SIZE * 2] = '\0';
 }

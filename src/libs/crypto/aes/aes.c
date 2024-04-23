@@ -4,7 +4,7 @@
  * 
  * Copyright (c) 2024 Armin Asefi <https://github.com/0xDeviI>
  * 
- * Created Date: Thursday, March 14th 2024, 2:47:53 am
+ * Created Date: Tuesday, April 2nd 2024, 12:06:13 am
  * Author: Armin Asefi
  * 
  * This license agreement (the "License") is a legal agreement between 
@@ -52,45 +52,25 @@
  */
 
 
-#include "thread.h"
+#include "aes.h"
 
-thread *threads_pool[MT_MAX_PARALLEL_THREADS];
-ushort threads_pool_size = 0;
-
-void terminate_thread(thread *_thread) {
-    if (_thread != NULL) {
-        pthread_cancel(*_thread);
-        for (ushort i = 0; i < threads_pool_size; i++) {
-            if (memcmp(_thread, threads_pool[i], sizeof(thread)) == 0) {
-                free(threads_pool[i]);
-                threads_pool[i] = NULL;
-                for (ushort j = i; j < threads_pool_size - 1; j++) {
-                    threads_pool[j] = threads_pool[j + 1];
-                }
-                threads_pool[--threads_pool_size] = NULL;
-                break;
-            }
-        }
-    }
+void aes_init(uchar *password, int passwordLength, uchar *salt, uchar *key, uchar *iv) {
+    PKCS5_PBKDF2_HMAC_SHA1(password, passwordLength, salt, SALT_LENGTH, ITERATIONS, KEY_LENGTH, key);
+    PKCS5_PBKDF2_HMAC_SHA1(password, passwordLength, salt, SALT_LENGTH, ITERATIONS, IV_LENGTH, iv);
 }
 
-
-thread *create_thread(t_function func, void *arg) {
-    if (func == NULL)
-        return NULL;
-
-    if (threads_pool_size >= MT_MAX_PARALLEL_THREADS) {
-        threads_pool_size = MT_MAX_PARALLEL_THREADS;
-        terminate_thread(threads_pool[--threads_pool_size]);
-    }
-
-    threads_pool[threads_pool_size] = (thread *) malloc(sizeof(thread));
-    pthread_create(threads_pool[threads_pool_size], NULL, func, arg);
-    return threads_pool[threads_pool_size++];
+void encrypt_data(uchar *key, uchar *iv, uchar *data, int dataLength, uchar *encryptedData, int *encryptedDataLength) {
+    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+    EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv);
+    EVP_EncryptUpdate(ctx, encryptedData, encryptedDataLength, data, dataLength);
+    EVP_EncryptFinal_ex(ctx, encryptedData + *encryptedDataLength, encryptedDataLength);
+    EVP_CIPHER_CTX_free(ctx);
 }
 
-
-void clear_thread_mem_pool(void) {
-    for (ushort i = 0; i < threads_pool_size; i++)
-        terminate_thread(threads_pool[i]);
+void decrypt_data(uchar *key, uchar *iv, uchar *encryptedData, int encryptedDataLength, uchar *decryptedData, int *decryptedDataLength) {
+    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+    EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv);
+    EVP_DecryptUpdate(ctx, decryptedData, decryptedDataLength, encryptedData, encryptedDataLength);
+    EVP_DecryptFinal_ex(ctx, decryptedData + *decryptedDataLength, decryptedDataLength);
+    EVP_CIPHER_CTX_free(ctx);
 }

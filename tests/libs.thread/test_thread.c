@@ -133,15 +133,18 @@ START_TEST(test_terminate_non_existing_thread)
 }
 END_TEST
 
-// START_TEST(test_memory_leaks)
-// {
-//     clear_thread_mem_pool();
-//     for (int i = 0; i < MT_MAX_PARALLEL_THREADS; i++)
-//         create_thread(thread_function_a, NULL);
-//     clear_thread_mem_pool();
-//     ck_assert_int_eq(threads_pool_size, 0);
-// }
-// END_TEST
+START_TEST(test_memory_leaks)
+{
+    clear_thread_mem_pool();
+    for (int i = 0; i < MT_MAX_PARALLEL_THREADS; i++)
+        create_thread(thread_function_a, NULL);
+
+    for (int i = 0; threads_pool_size > 0;)
+        terminate_thread(threads_pool[i]);
+
+    ck_assert_int_eq(threads_pool_size, 0);
+}
+END_TEST
 
 START_TEST(test_null_arguments)
 {
@@ -179,7 +182,7 @@ Suite *thread_suite(void)
     tcase_add_test(tc_core, test_threads_pool_full);
     tcase_add_test(tc_core, test_clear_thread_mem_pool);
     tcase_add_test(tc_core, test_terminate_non_existing_thread);
-    // tcase_add_test(tc_core, test_memory_leaks);
+    tcase_add_test(tc_core, test_memory_leaks);
     tcase_add_test(tc_core, test_null_arguments);
     tcase_add_test(tc_core, test_concurrency);
 

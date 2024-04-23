@@ -4,7 +4,7 @@
  * 
  * Copyright (c) 2024 Armin Asefi <https://github.com/0xDeviI>
  * 
- * Created Date: Thursday, March 14th 2024, 2:47:53 am
+ * Created Date: Sunday, March 31st 2024, 4:15:35 am
  * Author: Armin Asefi
  * 
  * This license agreement (the "License") is a legal agreement between 
@@ -52,45 +52,17 @@
  */
 
 
-#include "thread.h"
+#ifndef SHA512_H
+#define SHA512_H
 
-thread *threads_pool[MT_MAX_PARALLEL_THREADS];
-ushort threads_pool_size = 0;
+#include <stdio.h>
+#include <string.h>
+#include <openssl/evp.h>
+#include "../../core/globals.h"
 
-void terminate_thread(thread *_thread) {
-    if (_thread != NULL) {
-        pthread_cancel(*_thread);
-        for (ushort i = 0; i < threads_pool_size; i++) {
-            if (memcmp(_thread, threads_pool[i], sizeof(thread)) == 0) {
-                free(threads_pool[i]);
-                threads_pool[i] = NULL;
-                for (ushort j = i; j < threads_pool_size - 1; j++) {
-                    threads_pool[j] = threads_pool[j + 1];
-                }
-                threads_pool[--threads_pool_size] = NULL;
-                break;
-            }
-        }
-    }
-}
+#define SHA512_HASH_SIZE (512 / 8)
 
+void generate_sha512_hash(const uchar *input, size_t input_len, uchar *hash);
+void sha512_to_hex_string(uchar *hash, uchar *output);
 
-thread *create_thread(t_function func, void *arg) {
-    if (func == NULL)
-        return NULL;
-
-    if (threads_pool_size >= MT_MAX_PARALLEL_THREADS) {
-        threads_pool_size = MT_MAX_PARALLEL_THREADS;
-        terminate_thread(threads_pool[--threads_pool_size]);
-    }
-
-    threads_pool[threads_pool_size] = (thread *) malloc(sizeof(thread));
-    pthread_create(threads_pool[threads_pool_size], NULL, func, arg);
-    return threads_pool[threads_pool_size++];
-}
-
-
-void clear_thread_mem_pool(void) {
-    for (ushort i = 0; i < threads_pool_size; i++)
-        terminate_thread(threads_pool[i]);
-}
+#endif // !SHA512_H

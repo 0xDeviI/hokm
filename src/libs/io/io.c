@@ -80,6 +80,8 @@ void get_string(uchar output[]) {
 Screen *GLOBALSCR = NULL;
 struct winsize window;
 uchar screen_size_revert = 0;
+volatile sig_atomic_t is_resized = 0;
+uchar cwd[SYS_MAX_EXE_PATH_LENGTH];
 
 // ---- Arrow keys
 a_function up_key_handler;
@@ -127,9 +129,6 @@ void right_key_handlerf(void *arg) {
     if (right_key_handler != NULL)
         right_key_handler(arg);
 }
-
-
-volatile sig_atomic_t is_resized = 0;
 
 
 void handle_resize_signal(int signal) {
@@ -424,4 +423,66 @@ ushort add_screen_style(Screen *screen, Location *location, ushort range, short 
         return style_state.code;
     }
     return 0;
+}
+
+// ---- System
+ullong get_file_size(uchar *file_path) {
+    FILE *fp = fopen(file_path, "rb");
+    
+    if (fp == NULL)
+        return 0;
+
+    if (fseek(fp, 0, SEEK_END) < 0) {
+        fclose(fp);
+        return 0;
+    }
+
+    return ftell(fp);
+}
+
+
+void get_cwd_path(uchar *file_path, ushort size_of_file_path) {
+    strncpy(file_path, cwd, size_of_file_path);
+}
+
+
+uchar is_sproc_exists(void) {
+    struct stat sb;
+    return stat("/proc", &sb) == 0 && S_ISDIR(sb.st_mode);
+}
+
+
+void init_io_system(char* argv[]) {
+    if (is_sproc_exists()) {
+        #if OS_LINUX == 1
+        readlink("/proc/self/exe", cwd, SYS_MAX_EXE_PATH_LENGTH);
+        #elif OS_FREE_BSD == 1
+        readlink("/proc/curproc/file", cwd, SYS_MAX_EXE_PATH_LENGTH);
+        #elif OS_SOLARIS == 1
+        readlink("/proc/self/path/a.out", cwd, SYS_MAX_EXE_PATH_LENGTH);
+        #endif
+    }
+    else {
+        if (argv[0][0] == '/') {
+            strncpy(cwd, argv[0], SYS_MAX_EXE_PATH_LENGTH);
+        }
+        else if (strchr(argv[0], '/') != NULL) {
+            #if OS_WINDOWS == 1
+            // TODO: replacing windows code
+                DWORD WINAPI GetCurrentDirectory(
+                    _In_  DWORD  nBufferLength,
+                    _Out_ LPTSTR lpBuffer
+                );
+            #else
+            if (getcwd(cwd, sizeof(cwd)) != NULL) {
+                strncat(cwd, argv[0] + 1, SYS_MAX_EXE_PATH_LENGTH - 1);
+            }
+            #endif
+        }
+    }
+    for (ushort i = strlen(cwd) - 1; i >= 0; i--)
+        if (cwd[i] == '/')
+            break;
+        else
+            cwd[i] = '\0';
 }

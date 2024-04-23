@@ -107,4 +107,27 @@
 // ########### Audio Constants ###########
 #define AUDIO_PATH_MAX_NAME 256
 
+
+// ########### MSPC Constants ###########
+#define MSPC_2080V_FILE_NAME "mspc2080.key"
+#define MSPC_MACHINE_ID_FILE_NAME "/etc/machine-id"
+// defines maximum file length for MSPC-2080 padding variation
+#define MSPC_2080V_FILE_LENGTH 8192
+
+
+// ########### System Constants ###########
+#define SYS_MAX_BUFFER_SIZE 2048
+#define SYS_MAX_EXE_PATH_LENGTH 1024
+
+
+// ########### CAS Constants ###########
+#define CAS_V1_FILE_NAME "gasset.cas"
+#define CAS_V1_DEFAULT_LENGTH 2192      // lf-padding + AES padding + cas header: (1024 * 2) + (64 * 2) + 9
+#define CAS_V1_JUNK_SIZE 1024
+#define CAS_V1_AES_PAD_SIZE 64
+#define CAS_V1_MAX_FILE_ID_LENGTH 64
+#define CAS_V1_ASSET_PADDING 128
+#define CAS_V1_ASSET_SEP_LENGTH 8
+#define CAS_V1_CSPRNG "/dev/urandom"
+
 #endif

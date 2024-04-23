@@ -4,7 +4,7 @@
  * 
  * Copyright (c) 2024 Armin Asefi <https://github.com/0xDeviI>
  * 
- * Created Date: Thursday, March 14th 2024, 2:47:53 am
+ * Created Date: Sunday, March 31st 2024, 1:32:46 am
  * Author: Armin Asefi
  * 
  * This license agreement (the "License") is a legal agreement between 
@@ -52,45 +52,25 @@
  */
 
 
-#include "thread.h"
-
-thread *threads_pool[MT_MAX_PARALLEL_THREADS];
-ushort threads_pool_size = 0;
-
-void terminate_thread(thread *_thread) {
-    if (_thread != NULL) {
-        pthread_cancel(*_thread);
-        for (ushort i = 0; i < threads_pool_size; i++) {
-            if (memcmp(_thread, threads_pool[i], sizeof(thread)) == 0) {
-                free(threads_pool[i]);
-                threads_pool[i] = NULL;
-                for (ushort j = i; j < threads_pool_size - 1; j++) {
-                    threads_pool[j] = threads_pool[j + 1];
-                }
-                threads_pool[--threads_pool_size] = NULL;
-                break;
-            }
-        }
-    }
-}
+#ifndef MSPC_H
+#define MSPC_H
 
 
-thread *create_thread(t_function func, void *arg) {
-    if (func == NULL)
-        return NULL;
-
-    if (threads_pool_size >= MT_MAX_PARALLEL_THREADS) {
-        threads_pool_size = MT_MAX_PARALLEL_THREADS;
-        terminate_thread(threads_pool[--threads_pool_size]);
-    }
-
-    threads_pool[threads_pool_size] = (thread *) malloc(sizeof(thread));
-    pthread_create(threads_pool[threads_pool_size], NULL, func, arg);
-    return threads_pool[threads_pool_size++];
-}
+#include "../../io/io.h"
+#include "../../core/constants.h"
+#include "../../core/globals.h"
+#include "../../sys/sys.h"
+#include "../sha512/sha512.h"
+#include "../sha256/sha256.h"
 
 
-void clear_thread_mem_pool(void) {
-    for (ushort i = 0; i < threads_pool_size; i++)
-        terminate_thread(threads_pool[i]);
-}
+void get_mspc_file_path(uchar *mspc_file_path, ushort size_of_mspc_file_path);
+uchar is_mspc_exists(void);
+void get_mspc_key(uchar *key);
+uchar is_machine_id_supported(void);
+void generate_mspc_key(uchar *key_output);
+uchar is_mspc_valid(void);
+void generate_mspc(void);
+void init_mspc(void);
+
+#endif // !MSPC_H

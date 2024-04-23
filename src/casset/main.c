@@ -4,7 +4,7 @@
  * 
  * Copyright (c) 2024 Armin Asefi <https://github.com/0xDeviI>
  * 
- * Created Date: Thursday, March 14th 2024, 2:47:53 am
+ * Created Date: Tuesday, April 2nd 2024, 5:53:54 am
  * Author: Armin Asefi
  * 
  * This license agreement (the "License") is a legal agreement between 
@@ -52,45 +52,24 @@
  */
 
 
-#include "thread.h"
+#include <stdio.h>
+#include "../libs/io/io.h"
+#include "casset.h"
 
-thread *threads_pool[MT_MAX_PARALLEL_THREADS];
-ushort threads_pool_size = 0;
+int main(int argc, char *argv[]) {
+    init_io_system(argv);
+    init_casset();
 
-void terminate_thread(thread *_thread) {
-    if (_thread != NULL) {
-        pthread_cancel(*_thread);
-        for (ushort i = 0; i < threads_pool_size; i++) {
-            if (memcmp(_thread, threads_pool[i], sizeof(thread)) == 0) {
-                free(threads_pool[i]);
-                threads_pool[i] = NULL;
-                for (ushort j = i; j < threads_pool_size - 1; j++) {
-                    threads_pool[j] = threads_pool[j + 1];
-                }
-                threads_pool[--threads_pool_size] = NULL;
-                break;
-            }
-        }
+    if (argc > 1 && strcmp(argv[1], "c") == 0) {
+        uchar *file_name = "test.txt";
+        uchar r;
+        printf("adding file %s\nresult: %d\n------------------------------\n", file_name, r);
+        r = insert_file_to_casset(file_name, strlen(file_name), "assets/music/test.txt");
+        printf("r: %d\n", r);
+        
+        // file_name = "IDK_Moskau_8_bit.wav";
+        // printf("adding file %s\nresult: %d\n------------------------------\n", file_name, r);
+        // r = insert_file_to_casset(file_name, strlen(file_name), "assets/music/IDK_Moskau_8_bit.wav");
     }
-}
-
-
-thread *create_thread(t_function func, void *arg) {
-    if (func == NULL)
-        return NULL;
-
-    if (threads_pool_size >= MT_MAX_PARALLEL_THREADS) {
-        threads_pool_size = MT_MAX_PARALLEL_THREADS;
-        terminate_thread(threads_pool[--threads_pool_size]);
-    }
-
-    threads_pool[threads_pool_size] = (thread *) malloc(sizeof(thread));
-    pthread_create(threads_pool[threads_pool_size], NULL, func, arg);
-    return threads_pool[threads_pool_size++];
-}
-
-
-void clear_thread_mem_pool(void) {
-    for (ushort i = 0; i < threads_pool_size; i++)
-        terminate_thread(threads_pool[i]);
+    return 0;
 }
