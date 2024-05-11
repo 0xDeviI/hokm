@@ -4,7 +4,7 @@
  * 
  * Copyright (c) 2024 Armin Asefi <https://github.com/0xDeviI>
  * 
- * Created Date: Wednesday, February 14th 2024, 3:15:24 am
+ * Created Date: Saturday, May 11th 2024, 11:25:58 pm
  * Author: Armin Asefi
  * 
  * This license agreement (the "License") is a legal agreement between 
@@ -52,28 +52,29 @@
  */
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "libs/crypto/mspc/mspc.h"
-#include "game/entry.c"
+#include "../libs/menu/menu.h"
+#include "../game/menu/menu.h"
+#include "../game/splash/splash.h"
+#include "../libs/audio/audio.h"
 
-int main(int argc, char* argv[]) {
-    // init
-    init_io_system(argv);
-    init_mspc();
+// #include "../libs/cards/card.h"
+// #include "../libs/lobby/lobby.h"
+// #include "../libs/player/player.h"
+// #include <netinet/in.h>
+// #include <sys/socket.h>
+// #include <arpa/inet.h>
 
-    // init screen frame
-    Screen screen;
-    init_screen(&screen, 1);
-    draw_screen_frame(&screen);
-    endwin();
+// menu:
+// 1. Create Game
+// 2. Join Game
+// 3. Global Games
+// 4. Settings
+// 5. Credit
+// 6. Exit
 
-    // call game entry
-    game_entry(argc, argv);
-
-    // killing all the threads and cleaning all the allocated memory for threads
-    pthread_exit(NULL);
-    clear_thread_mem_pool();
-    return 0;
+void game_entry(int argc, char* argv[]) {
+    Audio *audio = create_audio("assets/music/IDK_Moskau_8_bit.wav", 1);
+    play_audio(audio);
+    
+    splash_init();
 }
