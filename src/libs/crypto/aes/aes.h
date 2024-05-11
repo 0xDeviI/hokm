@@ -69,8 +69,12 @@
 
 
 void aes_init(uchar *password, int passwordLength, uchar *salt, uchar *key, uchar *iv);
-int pad(uchar *data, int dataLength);
-int unpad(uchar *data, int dataLength);
+
+// Function to add PKCS7 padding
+void add_pkcs7_padding(uchar *data, int dataLength, int blockSize);
+// Function to remove PKCS7 padding
+void remove_pkcs7_padding(uchar *data, int dataLength);
+
 void encrypt_data(uchar *key, uchar *iv, uchar *data, int dataLength, uchar *encryptedData, int *encryptedDataLength);
 void decrypt_data(uchar *key, uchar *iv, uchar *encryptedData, int encryptedDataLength, uchar *decryptedData, int *decryptedDataLength);
 

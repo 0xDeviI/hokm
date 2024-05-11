@@ -91,7 +91,7 @@ void splash_init(void) {
     vtgclear();
     for (uchar i = 0; i < 22; i++) {
         prepare_to_print_center(&GLOBALSCR->location, &GLOBALSCR->size, 76, 22, i);
-        add_screen_style(GLOBALSCR, &GLOBALSCR->location, 76, COLOR_RED, COLOR_BLACK, A_BOLD | A_ITALIC);
+        add_screen_style(GLOBALSCR, &GLOBALSCR->location, 76, COLOR_WHITE, COLOR_BLACK, A_BOLD | A_ITALIC);
         vtgprintf(HOKM_LARGE_LOGO[i]);
     }
 

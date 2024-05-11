@@ -66,6 +66,10 @@ int main(int argc, char *argv[]) {
         printf("adding file %s\nresult: %d\n------------------------------\n", file_name, r);
         r = insert_file_to_casset(file_name, strlen(file_name), "assets/music/test.txt");
         printf("r: %d\n", r);
+
+        // printf("adding file %s\nresult: %d\n------------------------------\n", file_name, r);
+        // r = insert_file_to_casset(file_name, strlen(file_name), "assets/music/test2.txt");
+        // printf("r: %d\n", r);
         
         // file_name = "IDK_Moskau_8_bit.wav";
         // printf("adding file %s\nresult: %d\n------------------------------\n", file_name, r);

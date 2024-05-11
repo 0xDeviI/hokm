@@ -54,15 +54,40 @@
 
 #include "aes.h"
 
+// Function to add PKCS7 padding
+void add_pkcs7_padding(uchar *data, int dataLength, int blockSize) {
+    int padding = blockSize - (dataLength % blockSize);
+    for (int i = 0; i < padding; i++) {
+        data[dataLength + i] = padding;
+    }
+}
+
+// Function to remove PKCS7 padding
+void remove_pkcs7_padding(uchar *data, int dataLength) {
+    int padding = data[dataLength - 1];
+    if (padding > dataLength || padding < 1) {
+        // Padding is invalid
+        return;
+    }
+    for (int i = dataLength - padding; i < dataLength; i++) {
+        if (data[i] != padding) {
+            // Padding is invalid
+            return;
+        }
+    }
+    data[dataLength - padding] = '\0';
+}
+
 void aes_init(uchar *password, int passwordLength, uchar *salt, uchar *key, uchar *iv) {
     PKCS5_PBKDF2_HMAC_SHA1(password, passwordLength, salt, SALT_LENGTH, ITERATIONS, KEY_LENGTH, key);
     PKCS5_PBKDF2_HMAC_SHA1(password, passwordLength, salt, SALT_LENGTH, ITERATIONS, IV_LENGTH, iv);
 }
 
 void encrypt_data(uchar *key, uchar *iv, uchar *data, int dataLength, uchar *encryptedData, int *encryptedDataLength) {
+    add_pkcs7_padding(data, dataLength, AES_BLOCK_SIZE);
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
     EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv);
-    EVP_EncryptUpdate(ctx, encryptedData, encryptedDataLength, data, dataLength);
+    EVP_EncryptUpdate(ctx, encryptedData, encryptedDataLength, data, dataLength + AES_BLOCK_SIZE);
     EVP_EncryptFinal_ex(ctx, encryptedData + *encryptedDataLength, encryptedDataLength);
     EVP_CIPHER_CTX_free(ctx);
 }
@@ -72,5 +97,6 @@ void decrypt_data(uchar *key, uchar *iv, uchar *encryptedData, int encryptedData
     EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv);
     EVP_DecryptUpdate(ctx, decryptedData, decryptedDataLength, encryptedData, encryptedDataLength);
     EVP_DecryptFinal_ex(ctx, decryptedData + *decryptedDataLength, decryptedDataLength);
+    remove_pkcs7_padding(decryptedData, *decryptedDataLength);
     EVP_CIPHER_CTX_free(ctx);
 }

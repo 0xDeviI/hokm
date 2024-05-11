@@ -67,6 +67,21 @@ uchar get_file_from_cas(uchar *file_id, uchar size_of_file_id, uchar *buffer) {
     if (!is_cas_valid())
         return 0;
 
+
+    uchar cas_file_path[SYS_MAX_EXE_PATH_LENGTH];
+    get_cas_file_path(cas_file_path, sizeof(cas_file_path));
+    // reading cas file
+    ullong cas_file_size = get_file_size(cas_file_path);
+    FILE *cas_fp = fopen(cas_file_path, "rb");
+
+    // cloning first 1104 bytes (1024 junks + 16 header + 64 AES f-padding)
+    ushort index = CAS_V1_JUNK_SIZE + SIZE_OF_CAS_V1_HEADER + CAS_V1_AES_PAD_SIZE;    
+
+        // calculating size of AES payload bytes size
+    int aes_file_size = cas_file_size - (index + CAS_V1_JUNK_SIZE + CAS_V1_AES_PAD_SIZE);
+    int aes_payload_size;
+    uchar *cas_file_aes_portion;
+
     // defining aes features
     uchar key[KEY_LENGTH];
     uchar iv[IV_LENGTH];
@@ -74,68 +89,35 @@ uchar get_file_from_cas(uchar *file_id, uchar size_of_file_id, uchar *buffer) {
     uchar password[KEY_SIZE / 4];
     get_mspc_key(password);
 
-    uchar cas_file_path[SYS_MAX_EXE_PATH_LENGTH];
-    get_cas_file_path(cas_file_path, sizeof(cas_file_path));
+            int decrypted_data_size = aes_file_size - (sizeof(iv) + sizeof(salt));
+        uchar *cas_file_decrypted = (uchar *) malloc(decrypted_data_size);
+        cas_file_aes_portion = (uchar *) malloc(decrypted_data_size);
+        if (!copy_n_bytes(cas_file_aes_portion, index, decrypted_data_size, cas_fp))
+            return 4;
 
-    ushort index = CAS_V1_JUNK_SIZE + SIZE_OF_CAS_V1_HEADER + CAS_V1_AES_PAD_SIZE;
+        // copying salt
+        if (!copy_n_bytes(salt, index + aes_file_size - (sizeof(iv) + sizeof(salt)), sizeof(salt), cas_fp))
+            return 4;
 
-    // reading cas file
-    // here
-    int cas_file_size = get_file_size(cas_file_path);
-    FILE *cas_fp = fopen(cas_file_path, "rb");
-    int aes_file_size = cas_file_size - (index + CAS_V1_JUNK_SIZE + CAS_V1_AES_PAD_SIZE);
-    int aes_payload_size = aes_file_size - (sizeof(salt) + sizeof(iv));
+        // copying IV
+        if (!copy_n_bytes(iv, index + aes_file_size - sizeof(iv), sizeof(iv), cas_fp))
+            return 4;
 
-    // copying salt
-    if (!copy_n_bytes(salt, index + aes_file_size - (sizeof(iv) + sizeof(salt)), sizeof(salt), cas_fp)) {
-        fclose(cas_fp);
-        return 4;
-    }
-    
-    // copying IV
-    if (!copy_n_bytes(iv, index + aes_file_size - sizeof(iv), sizeof(iv), cas_fp)) {
-        fclose(cas_fp);
-        return 4;
-    }
-
-    aes_init(password, strlen(password), salt, key, iv);
-    uchar *cas_file_decrypted = (uchar *) malloc(aes_payload_size);
-    uchar *cas_file_aes_portion = (uchar *) malloc(aes_payload_size);
-    
-    if (!copy_n_bytes(cas_file_aes_portion, index, aes_payload_size, cas_fp)) {
-        fclose(cas_fp);
-        free(cas_file_decrypted);
+        aes_init(password, strlen(password), salt, key, iv);
+        decrypt_data(key, iv, cas_file_aes_portion, decrypted_data_size, cas_file_decrypted, &decrypted_data_size);
+        decrypted_data_size = aes_file_size - (sizeof(iv) + sizeof(salt));
         free(cas_file_aes_portion);
-        return 4;
-    }
-if (!copy_n_bytes(salt, index + aes_file_size - (sizeof(iv) + sizeof(salt)), sizeof(salt), cas_fp)) {
-        fclose(cas_fp);
-        return 4;
-    }
-    
-    // copying IV
-    if (!copy_n_bytes(iv, index + aes_file_size - sizeof(iv), sizeof(iv), cas_fp)) {
-        fclose(cas_fp);
-        return 4;
-    }
-    printf("d-key: %s\n", key);
-    decrypt_data(key, iv, cas_file_aes_portion, aes_payload_size, cas_file_decrypted, &aes_payload_size);
-    aes_payload_size = aes_file_size - (sizeof(salt) + sizeof(iv));
 
-    // for (int i = 0; i < aes_payload_size; i++) {
-    //     printf("char: %d\n", cas_file_decrypted[i]);
-    // }
 
-    FILE *test = fopen("test.out", "wb+");
-    fwrite(cas_file_decrypted, aes_payload_size, 1, test);
-    fclose(test);
-
+    FILE *out = fopen("test.out", "wb+");
+    fwrite(cas_file_decrypted, decrypted_data_size, 1, out);
+    fclose(out);
 }
 
 
 void get_cas_file_path(uchar *cas_file_path, ushort size_of_cas_file_path) {
     get_cwd_path(cas_file_path, size_of_cas_file_path);
-    strcat(cas_file_path, CAS_V1_FILE_NAME);
+    strncat(cas_file_path, CAS_V1_FILE_NAME, size_of_cas_file_path);
 }
 
 
@@ -273,31 +255,76 @@ uchar copy_n_bytes(uchar *out, ullong offset, ullong size, FILE *fp) {
 }
 
 
-void create_aes_payload_buffer(uchar *file_content, ullong size_of_file, uchar *file_id, ullong size_of_file_id, ullong offset, FILE *fp) {
-    // feeding first 128 bytes (asset f-padding)
-    for (ushort i = 0; i < CAS_V1_ASSET_PADDING; i++)
-        file_content[offset + i] = '\x0c';
+void create_aes_payload_buffer(int *aes_payload_size, uchar **file_content, ullong size_of_file, uchar *file_id, ullong size_of_file_id, ullong offset, uchar is_initial, FILE *fp) {
+    cJSON *json_header = cJSON_CreateArray();
+    cJSON *file_data_json_object = cJSON_CreateObject();
+    uchar *json_dump;
+    ushort size_of_json_dump;
+    ullong rest_size = 0;
+    ushort header_size = 0;
+    if (is_initial) {
+        cJSON_AddStringToObject(file_data_json_object, "name", file_id);
+        cJSON_AddNumberToObject(file_data_json_object, "start", 0);
+        cJSON_AddNumberToObject(file_data_json_object, "end", size_of_file);
+        cJSON_AddItemToArray(json_header, file_data_json_object);
+        json_dump = cJSON_PrintUnformatted(json_header);
+        size_of_json_dump = strlen(json_dump);
 
-    printf("first loop passed!\n");
+        // making enough space for json header, \n character and fp's content
+        *aes_payload_size = size_of_json_dump + 1 + size_of_file;
+        *file_content = (uchar *) realloc(*file_content, *aes_payload_size);
 
-    fread(file_content + CAS_V1_ASSET_PADDING + offset, 1, size_of_file, fp);
+        memcpy(*file_content, json_dump, size_of_json_dump);
+        memcpy(*file_content + size_of_json_dump, "\n", 1);
+        fread(*file_content + size_of_json_dump + 1, sizeof(uchar), size_of_file, fp);
+        (*file_content)[size_of_file + size_of_json_dump + 1] = 0;
 
-    // feeding last 128 bytes (asset l-padding)
-    for (ushort i = 0; i < CAS_V1_ASSET_PADDING; i++)
-        file_content[offset + size_of_file + CAS_V1_ASSET_PADDING + i] = '\x0c';
+        printf("file content: %s\n", *file_content);
+        free(json_header);
+        free(file_data_json_object);
+    }
+    else {
+        json_dump = (uchar *) malloc(CAS_V1_MAX_PAYLOAD_HEADER_LENGTH);
+        ushort i = 0;
+        while ((*file_content)[i] != '\n' && (*file_content)[i] != '\0') {
+            json_dump[i] = (*file_content)[i];
+            i++;
+        }
+    
+        json_dump[i] = '\0'; // Add null terminator at the end
+        json_header = cJSON_Parse(json_dump);
+        header_size = strlen(cJSON_PrintUnformatted(json_header));
+        rest_size = *aes_payload_size - header_size;
         
-    printf("second loop passed!\n");
+        ullong last_end = cJSON_GetNumberValue(cJSON_GetObjectItemCaseSensitive(&json_header->child[cJSON_GetArraySize(json_header) - 1], "end"));
+        cJSON_AddStringToObject(file_data_json_object, "name", file_id);
+        cJSON_AddNumberToObject(file_data_json_object, "start", last_end);
+        cJSON_AddNumberToObject(file_data_json_object, "end", last_end + size_of_file);
+        cJSON_AddItemToArray(json_header, file_data_json_object);
+        json_dump = cJSON_PrintUnformatted(json_header);
+        printf("json_dump: %s\n", json_dump);
+        size_of_json_dump = strlen(json_dump);
 
-    // adding file name
-    for (uchar i = 0; i < size_of_file_id; i++)
-        file_content[offset + size_of_file + (CAS_V1_ASSET_PADDING * 2) + i] = file_id[i];
+        // making enough space for json header, \n character and fp's content
+        *aes_payload_size = size_of_json_dump + 1 + size_of_file + rest_size;
+        
+        uchar *new_file_content = (uchar *) malloc(*aes_payload_size);
 
-    printf("third loop passed!\n");
 
-    for (uchar i = 0; i < CAS_V1_ASSET_SEP_LENGTH; i++)
-        file_content[offset + size_of_file + (CAS_V1_ASSET_PADDING * 2) + size_of_file_id + i] = '\x19';
-
-    printf("fourth loop passed!\n");
+        memcpy(new_file_content, json_dump, size_of_json_dump);
+        memcpy(new_file_content + size_of_json_dump, "\n", 1);
+        memcpy(new_file_content + size_of_json_dump + 1, *file_content + header_size + 1, rest_size);
+        fread(new_file_content + size_of_json_dump + 1 + rest_size, sizeof(uchar), size_of_file, fp);
+        new_file_content[size_of_json_dump + 1 + rest_size + size_of_file] = 0;
+        *file_content = (uchar *) realloc(*file_content, *aes_payload_size);
+        memcpy(*file_content, new_file_content, *aes_payload_size);
+        printf("X: file content: %s\n", *file_content);
+        // printf("fc-len: %d\n", strlen(*file_content));
+        // printf("size: %d\n", size_of_file);
+        // printf("afs: %d\n", *aes_payload_size);
+        // free(json_header);
+        // free(file_data_json_object);
+    }
 }
 
 
@@ -354,14 +381,14 @@ uchar insert_file_to_casset(uchar *file_id, uchar size_of_file_id, uchar *file_p
 
     if (aes_file_size == 0) {
         // creating new file and encrypting it
-        aes_payload_size = size_of_file + (CAS_V1_ASSET_PADDING * 2) + CAS_V1_ASSET_SEP_LENGTH + size_of_file_id;
+        aes_payload_size = size_of_file + size_of_file_id + 1;
         uchar *file_content = (uchar *) malloc(aes_payload_size);
-        create_aes_payload_buffer(file_content, size_of_file, file_id, size_of_file_id, 0, fp);
-
+        create_aes_payload_buffer(&aes_payload_size, &file_content, size_of_file, file_id, size_of_file_id, 0, 1, fp);
 
         RAND_bytes(iv, IV_LENGTH);
         RAND_bytes(salt, SALT_LENGTH);
         aes_init(password, strlen(password), salt, key, iv);
+        // printf("e-key: %s\n", key);
 
         int file_encryption_size = aes_payload_size;
         // cas_file_aes_portion = (uchar *) malloc(aes_payload_size);
@@ -403,9 +430,12 @@ uchar insert_file_to_casset(uchar *file_id, uchar size_of_file_id, uchar *file_p
         //     printf("char: %d\n", cas_file_decrypted[i]);
         // exit(0);
 
-        aes_payload_size = decrypted_data_size + size_of_file + (CAS_V1_ASSET_PADDING * 2) + CAS_V1_ASSET_SEP_LENGTH + size_of_file_id;
+        aes_payload_size = decrypted_data_size + size_of_file + size_of_file_id + 1;
+        // printf("cfd: %s\n", cas_file_decrypted);
         cas_file_decrypted = (uchar *) realloc(cas_file_decrypted, aes_payload_size);
-        create_aes_payload_buffer(cas_file_decrypted, size_of_file, file_id, size_of_file_id, decrypted_data_size, fp);
+        // printf("cfd: %s\n", cas_file_decrypted);
+        create_aes_payload_buffer(&aes_payload_size, &cas_file_decrypted, size_of_file, file_id, size_of_file_id, decrypted_data_size, 0, fp);
+        // printf("buffer: %s\n", cas_file_decrypted);
 
         RAND_bytes(iv, IV_LENGTH);
         RAND_bytes(salt, SALT_LENGTH);

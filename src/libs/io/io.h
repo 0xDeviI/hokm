@@ -46,8 +46,8 @@
  * 
  * 6. GOVERNING LAW
  * THIS LICENSE SHALL BE GOVERNED BY AND CONSTRUED IN ACCORDANCE WITH THE
- * LAWS OF --IRAN, ISLAMIC REPUBLIC--. ANY DISPUTES ARISING UNDER THIS LICENSE
- * SHALL BE SUBJECT TO THE EXCLUSIVE JURISDICTION OF THE COURTS IN --IRAN, ISLAMIC REPUBLIC--.
+ * LAWS OF --IRAN, ISLAMIC REPUBLIC OF--. ANY DISPUTES ARISING UNDER THIS LICENSE
+ * SHALL BE SUBJECT TO THE EXCLUSIVE JURISDICTION OF THE COURTS IN --IRAN, ISLAMIC REPUBLIC OF--.
  * 
  */
 
@@ -168,7 +168,7 @@ void vtput_horizontal_tab(Screen *screen);
 void vtput_vertical_tab(Screen *screen);
 void vtput_formfeed_pagebreak(Screen *screen);
 void vtput_carriage_return(Screen *screen);
-uchar vtcheck_especial_character(Screen *screen, uchar character, uchar buffer[], ushort *printed_buffer);
+uchar vtcheck_special_character(Screen *screen, uchar character, uchar buffer[], ushort *printed_buffer);
 void vtputch(Screen *screen, uchar data);
 void vtprintf(Screen *screen, uchar *fmt, ...);
 void vtgprintf(uchar *fmt, ...);

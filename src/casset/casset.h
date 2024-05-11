@@ -56,6 +56,7 @@
 #define CASSET_H
 
 #include "../libs/io/io.h"
+#include "../libs/cJSON/cJSON.h"
 #include "../libs/crypto/mspc/mspc.h"
 #include "../libs/crypto/aes/aes.h"
 
@@ -72,7 +73,8 @@ void generate_cas(void);
 void init_cas_bundle(void);
 void init_casset();
 uchar copy_n_bytes(uchar *out, ullong offset, ullong size, FILE *fp);
-void create_aes_payload_buffer(uchar *file_content, ullong size_of_file, uchar *file_id, ullong size_of_file_id, ullong offset, FILE *fp);
+void create_aes_payload_buffer(int *aes_payload_size, uchar **file_content, ullong size_of_file, uchar *file_id, 
+    ullong size_of_file_id, ullong offset, uchar is_initial, FILE *fp);
 uchar insert_file_to_casset(uchar *file_id, uchar size_of_file_id, uchar *file_path);
 
 #endif // !CASSET_H

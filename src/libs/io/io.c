@@ -305,7 +305,7 @@ void vtput_carriage_return(Screen *screen) {
 }
 
 
-uchar vtcheck_especial_character(Screen *screen, uchar character, uchar buffer[], ushort *printed_buffer) {
+uchar vtcheck_special_character(Screen *screen, uchar character, uchar buffer[], ushort *printed_buffer) {
     if (character == '\n') {
         vtput_new_line(screen);
         return 1;
@@ -348,7 +348,7 @@ void vtprintf(Screen *screen, uchar *fmt, ...) {
         while (printed_buffer < size_of_buffer) {
             if (printed_buffer < screen->size.columns * screen->size.rows) {
                 uchar character = buffer[printed_buffer++];
-                if (vtcheck_especial_character(screen, character, buffer, &printed_buffer) == 0) {
+                if (vtcheck_special_character(screen, character, buffer, &printed_buffer) == 0) {
                     if (screen->location.x == screen->size.columns && screen->location.y != screen->size.columns)
                         vtput_new_line(screen);
                     vtputch(screen, character);
@@ -437,7 +437,9 @@ ullong get_file_size(uchar *file_path) {
         return 0;
     }
 
-    return ftell(fp);
+    long file_size = ftell(fp);
+    fclose(fp);
+    return file_size;
 }
 
 

@@ -66,7 +66,6 @@
 #include "game/splash/splash.h"
 #include "libs/audio/audio.h"
 #include "libs/crypto/mspc/mspc.h"
-#include "libs/casset/api.h"
 
 // menu:
 
@@ -78,69 +77,19 @@
 // 6. Exit
 
 int main(int argc, char* argv[]) {
-    // Screen screen;
-    // init_screen(&screen, 1);
-    // draw_screen_frame(&screen);
-    // endwin();
     init_io_system(argv);
     init_mspc();
 
-    uchar *txt_assset;
-    get_asset("test.txt", txt_assset);
-
-    // unsigned char salt[8];
-    // unsigned char key[AES_KEY_SIZE / 8];
-    // unsigned char iv[AES_BLOCK_SIZE];
-    // unsigned char plaintext_chunk[CHUNK_SIZE];
-    // unsigned char ciphertext_chunk[CHUNK_SIZE + EVP_MAX_BLOCK_LENGTH]; // Extra space for padding
-    // int chunk_len;
-    // int ciphertext_len;
-    // const char *password = "MySecretPassword";
     
-    // FILE *input_file = fopen("input.txt", "rb");
-    // if(!input_file) {
-    //     fprintf(stderr, "Error opening input file.\n");
-    //     return 1;
-    // }
+    Screen screen;
+    init_screen(&screen, 1);
+    draw_screen_frame(&screen);
+    endwin();
 
-    // FILE *output_file = fopen("output.enc", "wb");
-    // if(!output_file) {
-    //     fprintf(stderr, "Error opening output file.\n");
-    //     fclose(input_file);
-    //     return 1;
-    // }
-
-    // // Generate random salt
-    // RAND_bytes(salt, sizeof(salt));
-
-    // // Derive key from password and salt
-    // if(pbkdf2(password, salt, sizeof(salt), key, sizeof(key)) != 0) {
-    //     fprintf(stderr, "Error deriving key from password.\n");
-    //     fclose(input_file);
-    //     fclose(output_file);
-    //     return 1;
-    // }
-
-    // // Initialize IV with random data
-    // RAND_bytes(iv, AES_BLOCK_SIZE);
-
-    // while ((chunk_len = fread(plaintext_chunk, 1, CHUNK_SIZE, input_file)) > 0) {
-    //     // Encrypt data chunk by chunk
-    //     ciphertext_len = encrypt_data_chunk(plaintext_chunk, chunk_len, key, iv, ciphertext_chunk);
-
-    //     // Write encrypted data chunk to output file
-    //     fwrite(ciphertext_chunk, 1, ciphertext_len, output_file);
-    // }
-
-    // printf("Data encrypted and written to output.enc\n");
-
-    // fclose(input_file);
-    // fclose(output_file);
-
-    // Audio *audio = create_audio("assets/music/IDK_Moskau_8_bit.wav", 1);
-    // play_audio(audio);
+    Audio *audio = create_audio("assets/music/IDK_Moskau_8_bit.wav", 1);
+    play_audio(audio);
     
-    // splash_init();
+    splash_init();
 
     pthread_exit(NULL);
     clear_thread_mem_pool();

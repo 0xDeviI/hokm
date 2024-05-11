@@ -68,7 +68,7 @@ FLAGS=-Ilibs -Iabstraction $(shell pkg-config --libs --cflags ncursesw sdl2 open
 # Casset
 CASSET_OUTPUT_FILE=$(OUTPUT_DIR)/casset
 CASSET_LIBS=$(SRC_DIR)/libs
-CASSET_FILES=$(CASSET_LIBS)/io/io.c $(CASSET_LIBS)/thread/thread.c $(CASSET_LIBS)/sys/sys.c
+CASSET_FILES=$(CASSET_LIBS)/io/io.c $(CASSET_LIBS)/thread/thread.c $(CASSET_LIBS)/sys/sys.c $(CASSET_LIBS)/cJSON/cJSON.c
 CASSET_FILES:=$(CASSET_FILES) $(SRC_DIR)/casset/casset.c $(wildcard ${CASSET_LIBS}/crypto/**/*.c)
 CASSET_FLAGS=-Ilibs -Iabstraction $(shell pkg-config --libs --cflags ncursesw openssl)
 
@@ -82,9 +82,10 @@ casset:
 	$(CC) -o $(CASSET_OUTPUT_FILE) $(SRC_DIR)/casset/main.c $(CASSET_FILES) $(CASSET_FLAGS)
 
 casset-clean:
+	rm -rf $(OUTPUT_DIR)/casset
 
 create-output-dir: clean
 	mkdir $(OUTPUT_DIR)
 
-build: create-output-dir casset casset-clean
+build: create-output-dir copy-assets
 	$(CC) -o $(OUTPUT_FILE) $(FILES) $(LIBS) $(GAME) $(FLAGS)

@@ -129,5 +129,6 @@
 #define CAS_V1_ASSET_PADDING 128
 #define CAS_V1_ASSET_SEP_LENGTH 8
 #define CAS_V1_CSPRNG "/dev/urandom"
+#define CAS_V1_MAX_PAYLOAD_HEADER_LENGTH 65536
 
 #endif
