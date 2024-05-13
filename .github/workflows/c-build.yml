@@ -9,8 +9,5 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v2
     - name: Set up CMake
-      uses: actions/setup-cmake@v1
-      with:
-        cmake-version: '3.21.3'
     - name: Build
       run: make
