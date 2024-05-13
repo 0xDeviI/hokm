@@ -8,5 +8,7 @@ jobs:
     steps:
     - name: Check out code
       uses: actions/checkout@v2
+    - name: Install SDL2 libraries
+      run: sudo apt-get update && sudo apt-get install -y libsdl2-dev
     - name: Build
       run: make build
