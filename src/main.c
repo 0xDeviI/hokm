@@ -55,13 +55,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "libs/crypto/mspc/mspc.h"
 #include "game/entry.c"
 
 int main(int argc, char* argv[]) {
     // init
     init_io_system(argv);
-    init_mspc();
 
     // init screen frame
     Screen screen;
